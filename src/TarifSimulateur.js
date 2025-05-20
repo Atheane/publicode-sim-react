@@ -59,7 +59,6 @@ function TransportTarifSimulateur() {
         const handicap = parseInt(situation["situation handicap"]);
         const isCombattant = situation["carte combattant"] === "'oui'";
         const qf = parseInt(situation["quotient familial"]);
-        const isGratuit = handicap >= 50 || isCombattant || qf <= 555;
 
         // Déterminer le type de voyage et les explications associées
         if (situation["type voyage"] === "'occasionnel'") {
