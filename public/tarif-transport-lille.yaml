@@ -34,14 +34,12 @@ tarif unitaire:
         alors: 3.10
 
 type unitaire:
-  question: Quel type de titre unitaire souhaitez-vous ?
-  par défaut: "'simple'"
   applicable si: type voyage = 'unitaire'
   formule:
     variations:
-      - si: bénéficiaire rsa
+      - si: bénéficiaire rsa = 'oui'
         alors: "'rsa'"
-      - si: handipole
+      - si: handipole = 'oui'
         alors: "'handipole'"
       - sinon: type unitaire standard
 
@@ -111,9 +109,9 @@ tarif abonnement:
     variations:
       - si: mineur mel
         alors: 0
-      - si: éligible tarif coquelicot
+      - si: éligible tarif coquelicot = 'oui'
         alors: 7.90
-      - si: éligible tarif iris
+      - si: éligible tarif iris = 'oui'
         alors: 7.90
       - si: 
           toutes ces conditions:
@@ -180,6 +178,11 @@ tarif abonnement:
         alors: tarif adulte css
       - si:
           toutes ces conditions:
+            - âge >= 26
+            - âge <= 64
+        alors: tarif tout public
+      - si:
+          toutes ces conditions:
             - âge >= 65
             - quotient familial <= 374
             - habitant mel = 'oui'
@@ -212,7 +215,6 @@ tarif abonnement:
           toutes ces conditions:
             - âge >= 65
         alors: tarif senior standard
-      - sinon: tarif tout public
 
 mineur mel:
   applicable si: type voyage = 'abonnement'
@@ -390,6 +392,7 @@ type abonnement:
 
 type abonnement jeune mel:
   question: Quel type d'abonnement souhaitez-vous ?
+  par défaut: "'mensuel'"
   suggestions:
     - "'permanent'"
     - "'10 mois'"
@@ -397,12 +400,14 @@ type abonnement jeune mel:
 
 type abonnement jeune:
   question: Quel type d'abonnement souhaitez-vous ?
+  par défaut: "'mensuel'"
   suggestions:
     - "'permanent'"
     - "'mensuel'"
 
 type abonnement adulte:
   question: Quel type d'abonnement souhaitez-vous ?
+  par défaut: "'mensuel'"
   suggestions:
     - "'permanent'"
     - "'mensuel'"
@@ -427,6 +432,7 @@ css ou ame:
   suggestions:
     - "'oui'"
     - "'non'"
+  applicable si: type voyage = 'abonnement'
 
 habitant mel:
   question: Habitez-vous dans la Métropole Européenne de Lille (MEL) ?

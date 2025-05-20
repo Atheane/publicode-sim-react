@@ -8,10 +8,14 @@ function LilleTransportTarifSimulateur() {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [explanations, setExplanations] = useState([]);
+
+  // État pour la situation spéciale (sélection mutuellement exclusive)
+  const [situationSpeciale, setSituationSpeciale] = useState("aucune");
+
   // Situation initiale
   const [situation, setSituation] = useState({
-    "type voyage": "'unitaire'",
-    "type unitaire": "'simple'",
+    "type voyage": "'abonnement'",
+    "type unitaire standard": "'simple'",
     "type pass": "'1 jour'",
     "type abonnement": "'mensuel'",
     âge: 30,
@@ -23,6 +27,43 @@ function LilleTransportTarifSimulateur() {
     "éligible tarif coquelicot": "'non'",
     "éligible tarif iris": "'non'",
   });
+
+  // Effet pour mettre à jour la situation basée sur la situation spéciale
+  useEffect(() => {
+    // Réinitialiser toutes les conditions
+    const newSituation = {
+      ...situation,
+      "bénéficiaire rsa": "'non'",
+      handipole: "'non'",
+      "css ou ame": "'non'",
+      "éligible tarif coquelicot": "'non'",
+      "éligible tarif iris": "'non'",
+    };
+
+    // Appliquer la situation sélectionnée
+    switch (situationSpeciale) {
+      case "rsa":
+        newSituation["bénéficiaire rsa"] = "'oui'";
+        break;
+      case "handipole":
+        newSituation["handipole"] = "'oui'";
+        break;
+      case "css_ame":
+        newSituation["css ou ame"] = "'oui'";
+        break;
+      case "coquelicot":
+        newSituation["éligible tarif coquelicot"] = "'oui'";
+        break;
+      case "iris":
+        newSituation["éligible tarif iris"] = "'oui'";
+        break;
+      default:
+        // Aucun changement pour "aucune"
+        break;
+    }
+
+    setSituation(newSituation);
+  }, [situationSpeciale]);
 
   useEffect(() => {
     // Charge le fichier YAML depuis le dossier public
@@ -65,11 +106,11 @@ function LilleTransportTarifSimulateur() {
             newExplanations.push(
               "Tarif Handipole pour les personnes à mobilité réduite"
             );
-          } else if (situation["type unitaire"] === "'simple'") {
+          } else if (situation["type unitaire standard"] === "'simple'") {
             newExplanations.push(
               "Titre valable 1h dans toute la MEL, entre la 1ère et la dernière validation"
             );
-          } else if (situation["type unitaire"] === "'carnet 10'") {
+          } else if (situation["type unitaire standard"] === "'carnet 10'") {
             newExplanations.push(
               "Carnet de 10 trajets, chacun valable 1h entre la 1ère et la dernière validation"
             );
@@ -103,7 +144,6 @@ function LilleTransportTarifSimulateur() {
           }
         } else if (situation["type voyage"] === "'abonnement'") {
           const age = parseInt(situation["âge"]);
-          const qf = parseInt(situation["quotient familial"]);
 
           if (situation["éligible tarif coquelicot"] === "'oui'") {
             newExplanations.push(
@@ -141,7 +181,11 @@ function LilleTransportTarifSimulateur() {
               );
             }
 
-            if (situation["habitant mel"] === "'oui'") {
+            if (
+              situation["habitant mel"] === "'oui'" &&
+              situation["css ou ame"] !== "'oui'"
+            ) {
+              const qf = parseInt(situation["quotient familial"]);
               if (qf <= 374) {
                 newExplanations.push(
                   "Vous bénéficiez du tarif solidaire QF1 (QF ≤ 374€)"
@@ -213,49 +257,129 @@ function LilleTransportTarifSimulateur() {
           </select>
         </div>
 
-        {situation["type voyage"] === "'unitaire'" && (
-          <>
+        {/* Section commune pour les situations spéciales */}
+        <div className="form-group">
+          <h3>Votre situation</h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            <label style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="situationSpeciale"
+                value="aucune"
+                checked={situationSpeciale === "aucune"}
+                onChange={(e) => setSituationSpeciale(e.target.value)}
+                style={{ marginRight: "10px" }}
+              />
+              Aucune situation particulière
+            </label>
+
+            {situation["type voyage"] === "'unitaire'" && (
+              <>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="situationSpeciale"
+                    value="rsa"
+                    checked={situationSpeciale === "rsa"}
+                    onChange={(e) => setSituationSpeciale(e.target.value)}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Bénéficiaire du RSA socle non majoré
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="situationSpeciale"
+                    value="handipole"
+                    checked={situationSpeciale === "handipole"}
+                    onChange={(e) => setSituationSpeciale(e.target.value)}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Utilisateur service Handipole
+                </label>
+              </>
+            )}
+
+            {situation["type voyage"] === "'abonnement'" && (
+              <>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="situationSpeciale"
+                    value="css_ame"
+                    checked={situationSpeciale === "css_ame"}
+                    onChange={(e) => setSituationSpeciale(e.target.value)}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Bénéficiaire de la CSS non participative ou de l'AME
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="situationSpeciale"
+                    value="coquelicot"
+                    checked={situationSpeciale === "coquelicot"}
+                    onChange={(e) => setSituationSpeciale(e.target.value)}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Non ou mal voyant (tarif Coquelicot)
+                </label>
+
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="radio"
+                    name="situationSpeciale"
+                    value="iris"
+                    checked={situationSpeciale === "iris"}
+                    onChange={(e) => setSituationSpeciale(e.target.value)}
+                    style={{ marginRight: "10px" }}
+                  />
+                  Demandeur d'emploi avec accompagnement renforcé (tarif Iris)
+                </label>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Demande toujours l'âge pour CSS/AME car le tarif en dépend */}
+        {(situationSpeciale === "css_ame" ||
+          (situation["type voyage"] === "'abonnement'" &&
+            situationSpeciale === "aucune")) && (
+          <div className="form-group">
+            <label>Âge</label>
+            <input
+              type="number"
+              value={situation["âge"]}
+              onChange={(e) => handleChange("âge", parseInt(e.target.value))}
+              min="0"
+              max="120"
+            />
+            <small>
+              Les tarifs varient selon l'âge: moins de 18 ans (gratuit pour les
+              habitants de la MEL), 4-25 ans, 26-64 ans, 65 ans et plus
+            </small>
+          </div>
+        )}
+
+        {situation["type voyage"] === "'unitaire'" &&
+          situationSpeciale === "aucune" && (
             <div className="form-group">
-              <label>Êtes-vous bénéficiaire du RSA socle non majoré ?</label>
+              <label>Type de titre unitaire</label>
               <select
-                value={situation["bénéficiaire rsa"]}
+                value={situation["type unitaire standard"]}
                 onChange={(e) =>
-                  handleChange("bénéficiaire rsa", e.target.value)
+                  handleChange("type unitaire standard", e.target.value)
                 }
               >
-                <option value="'non'">Non</option>
-                <option value="'oui'">Oui</option>
+                <option value="'simple'">Trajet unitaire</option>
+                <option value="'carnet 10'">Carnet 10 trajets</option>
               </select>
             </div>
-
-            <div className="form-group">
-              <label>Utilisez-vous le service Handipole ?</label>
-              <select
-                value={situation["handipole"]}
-                onChange={(e) => handleChange("handipole", e.target.value)}
-              >
-                <option value="'non'">Non</option>
-                <option value="'oui'">Oui</option>
-              </select>
-            </div>
-
-            {situation["bénéficiaire rsa"] === "'non'" &&
-              situation["handipole"] === "'non'" && (
-                <div className="form-group">
-                  <label>Type de titre unitaire</label>
-                  <select
-                    value={situation["type unitaire"]}
-                    onChange={(e) =>
-                      handleChange("type unitaire", e.target.value)
-                    }
-                  >
-                    <option value="'simple'">Trajet unitaire</option>
-                    <option value="'carnet 10'">Carnet 10 trajets</option>
-                  </select>
-                </div>
-              )}
-          </>
-        )}
+          )}
 
         {situation["type voyage"] === "'pass'" && (
           <div className="form-group">
@@ -276,150 +400,103 @@ function LilleTransportTarifSimulateur() {
           </div>
         )}
 
-        {situation["type voyage"] === "'abonnement'" && (
-          <>
-            <div className="form-group">
-              <label>
-                Êtes-vous non ou mal voyant avec carte mobilité inclusion
-                mention cécité ?
-              </label>
-              <select
-                value={situation["éligible tarif coquelicot"]}
-                onChange={(e) =>
-                  handleChange("éligible tarif coquelicot", e.target.value)
-                }
-              >
-                <option value="'non'">Non</option>
-                <option value="'oui'">Oui</option>
-              </select>
-            </div>
+        {situation["type voyage"] === "'abonnement'" &&
+          situationSpeciale === "aucune" && (
+            <>
+              <div className="form-group">
+                <label>Habitant de la MEL ?</label>
+                <select
+                  value={situation["habitant mel"]}
+                  onChange={(e) => handleChange("habitant mel", e.target.value)}
+                >
+                  <option value="'oui'">Oui</option>
+                  <option value="'non'">Non</option>
+                </select>
+                <small>
+                  La gratuité pour les moins de 18 ans et les tarifs solidaires
+                  sont réservés aux habitants de la Métropole Européenne de
+                  Lille
+                </small>
+              </div>
 
-            <div className="form-group">
-              <label>
-                Êtes-vous demandeur d'emploi avec accompagnement renforcé ?
-              </label>
-              <select
-                value={situation["éligible tarif iris"]}
-                onChange={(e) =>
-                  handleChange("éligible tarif iris", e.target.value)
-                }
-              >
-                <option value="'non'">Non</option>
-                <option value="'oui'">Oui</option>
-              </select>
-            </div>
-
-            {situation["éligible tarif coquelicot"] === "'non'" &&
-              situation["éligible tarif iris"] === "'non'" && (
+              {!(
+                parseInt(situation["âge"]) < 18 &&
+                situation["habitant mel"] === "'oui'"
+              ) && (
                 <>
                   <div className="form-group">
-                    <label>Âge</label>
-                    <input
-                      type="number"
-                      value={situation["âge"]}
-                      onChange={(e) =>
-                        handleChange("âge", parseInt(e.target.value))
-                      }
-                      min="0"
-                      max="120"
-                    />
-                    <small>
-                      Les tarifs varient selon l'âge: moins de 18 ans (gratuit
-                      pour les habitants de la MEL), 4-25 ans, 26-64 ans, 65 ans
-                      et plus
-                    </small>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Habitant de la MEL ?</label>
+                    <label>Type d'abonnement</label>
                     <select
-                      value={situation["habitant mel"]}
+                      value={situation["type abonnement"]}
                       onChange={(e) =>
-                        handleChange("habitant mel", e.target.value)
+                        handleChange("type abonnement", e.target.value)
                       }
                     >
-                      <option value="'oui'">Oui</option>
-                      <option value="'non'">Non</option>
+                      {parseInt(situation["âge"]) >= 4 &&
+                      parseInt(situation["âge"]) <= 25 &&
+                      situation["habitant mel"] === "'oui'" ? (
+                        <>
+                          <option value="'mensuel'">Mensuel</option>
+                          <option value="'permanent'">Permanent</option>
+                          <option value="'10 mois'">10 mois (Sept-Juin)</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="'mensuel'">Mensuel</option>
+                          <option value="'permanent'">Permanent</option>
+                        </>
+                      )}
                     </select>
                     <small>
-                      La gratuité pour les moins de 18 ans et les tarifs
-                      solidaires sont réservés aux habitants de la Métropole
-                      Européenne de Lille
+                      {situation["type abonnement"] === "'permanent'"
+                        ? "Abonnement permanent avec engagement minimum de 12 mois"
+                        : situation["type abonnement"] === "'10 mois'"
+                        ? "Abonnement 10 mois valable du 1er septembre au 30 juin"
+                        : "Abonnement mensuel sans engagement"}
                     </small>
                   </div>
 
-                  {!(
-                    parseInt(situation["âge"]) < 18 &&
-                    situation["habitant mel"] === "'oui'"
-                  ) && (
-                    <>
-                      <div className="form-group">
-                        <label>Type d'abonnement</label>
-                        <select
-                          value={situation["type abonnement"]}
-                          onChange={(e) =>
-                            handleChange("type abonnement", e.target.value)
-                          }
-                        >
-                          {parseInt(situation["âge"]) >= 4 &&
-                          parseInt(situation["âge"]) <= 25 &&
-                          situation["habitant mel"] === "'oui'" ? (
-                            <>
-                              <option value="'mensuel'">Mensuel</option>
-                              <option value="'permanent'">Permanent</option>
-                              <option value="'10 mois'">
-                                10 mois (Sept-Juin)
-                              </option>
-                            </>
-                          ) : (
-                            <>
-                              <option value="'mensuel'">Mensuel</option>
-                              <option value="'permanent'">Permanent</option>
-                            </>
-                          )}
-                        </select>
-                      </div>
-
-                      {situation["habitant mel"] === "'oui'" && (
-                        <div className="form-group">
-                          <label>Quotient familial CAF</label>
-                          <input
-                            type="number"
-                            value={situation["quotient familial"]}
-                            onChange={(e) =>
-                              handleChange(
-                                "quotient familial",
-                                parseInt(e.target.value)
-                              )
-                            }
-                            min="0"
-                          />
-                          <small>
-                            Montant fourni par la CAF - QF ≤ 374€: tarif QF1 /
-                            QF 375-537€: tarif QF2 / QF 538-716€: tarif QF3
-                          </small>
-                        </div>
-                      )}
-
-                      <div className="form-group">
-                        <label>
-                          Bénéficiaire de la CSS non participative ou de l'AME ?
-                        </label>
-                        <select
-                          value={situation["css ou ame"]}
-                          onChange={(e) =>
-                            handleChange("css ou ame", e.target.value)
-                          }
-                        >
-                          <option value="'non'">Non</option>
-                          <option value="'oui'">Oui</option>
-                        </select>
-                      </div>
-                    </>
+                  {situation["habitant mel"] === "'oui'" && (
+                    <div className="form-group">
+                      <label>Quotient familial CAF</label>
+                      <input
+                        type="number"
+                        value={situation["quotient familial"]}
+                        onChange={(e) =>
+                          handleChange(
+                            "quotient familial",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        min="0"
+                      />
+                      <small>
+                        Montant fourni par la CAF - QF ≤ 374€: tarif QF1 / QF
+                        375-537€: tarif QF2 / QF 538-716€: tarif QF3
+                      </small>
+                    </div>
                   )}
                 </>
               )}
-          </>
+            </>
+          )}
+
+        {/* Pour les bénéficiaires CSS/AME, demander aussi le type d'abonnement */}
+        {situationSpeciale === "css_ame" && (
+          <div className="form-group">
+            <label>Type d'abonnement</label>
+            <select
+              value={situation["type abonnement"]}
+              onChange={(e) => handleChange("type abonnement", e.target.value)}
+            >
+              <option value="'mensuel'">Mensuel</option>
+              <option value="'permanent'">Permanent (non applicable)</option>
+            </select>
+            <small>
+              Pour les bénéficiaires de la CSS ou de l'AME, seul l'abonnement
+              mensuel est disponible
+            </small>
+          </div>
         )}
       </div>
 
@@ -450,7 +527,8 @@ function LilleTransportTarifSimulateur() {
                 {formatValue(result)} €
                 {situation["type voyage"] === "'abonnement'" ? "/mois" : ""}
                 {situation["type voyage"] === "'unitaire'" &&
-                situation["type unitaire"] === "'carnet 10'"
+                (situation["type unitaire standard"] === "'carnet 10'" ||
+                  situation["bénéficiaire rsa"] === "'oui'")
                   ? " (carnet de 10)"
                   : ""}
               </>
