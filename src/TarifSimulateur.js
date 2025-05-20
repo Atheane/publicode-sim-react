@@ -14,11 +14,14 @@ function TransportTarifSimulateur() {
     "type ticket": "'1 voyage'",
     étudiant: "'non'",
     militaire: "'non'",
+    "carte combattant": "'non'",
+    "service civique": "'non'",
     "famille nombreuse": "'non'",
     périodicité: "'mensuel'",
     âge: 30,
-    "quotient familial": 1200,
-    salarié: "'non'",
+    "quotient familial": 1000,
+    "salarié entreprise partenaire": "'non'",
+    "situation handicap": 0,
   });
 
   useEffect(() => {
@@ -46,74 +49,76 @@ function TransportTarifSimulateur() {
     if (engine) {
       try {
         engine.setSituation(situation);
-        console.log(
-          "Âge condition:",
-          engine.evaluate("âge >= 28 et âge < 60").nodeValue
-        );
-        console.log(
-          "Salarié condition:",
-          engine.evaluate("salarié = 'oui'").nodeValue
-        );
-        console.log("Tarif jeune:", engine.evaluate("tarif jeune").nodeValue);
-        console.log(
-          "Tarif salarié:",
-          engine.evaluate("tarif salarié").nodeValue
-        );
-        console.log(
-          "Tarif standard calculé:",
-          engine.evaluate("tarif standard").nodeValue
-        );
-        console.log(
-          "Condition âge < 11:",
-          engine.evaluate("âge < 11").nodeValue
-        );
-        console.log(
-          "Condition âge >= 11 et âge <= 27:",
-          engine.evaluate("âge >= 11 et âge <= 27").nodeValue
-        );
-        console.log(
-          "Condition âge >= 28 et âge < 60:",
-          engine.evaluate("âge >= 28 et âge < 60").nodeValue
-        );
         const result = engine.evaluate("tarif");
         setResult(result);
-        // À ajouter dans la fonction TransportTarifSimulateur, après le calcul du résultat
-        const trancheSolidaire = engine.evaluate("tranche solidaire").nodeValue;
-        console.log("Tranche solidaire calculée:", trancheSolidaire);
+
         // Génération des explications
         const newExplanations = [];
+
+        // Vérifier les conditions de gratuité en premier
+        const handicap = parseInt(situation["situation handicap"]);
+        const isCombattant = situation["carte combattant"] === "'oui'";
+        const qf = parseInt(situation["quotient familial"]);
+        const isGratuit = handicap >= 50 || isCombattant || qf <= 555;
+
+        // Déterminer le type de voyage et les explications associées
         if (situation["type voyage"] === "'occasionnel'") {
           if (
-            situation["type ticket"] === "'10 voyage'" &&
+            situation["type ticket"] === "'10 voyages'" &&
             (situation["étudiant"] === "'oui'" ||
               situation["militaire"] === "'oui'" ||
-              situation["famille nombreuse"] === "'oui'")
+              situation["famille nombreuse"] === "'oui'" ||
+              situation["carte combattant"] === "'oui'" ||
+              situation["service civique"] === "'oui'")
           ) {
             newExplanations.push(
               "Vous bénéficiez du tarif réduit pour 10 voyages."
             );
           }
         } else if (situation["type voyage"] === "'fréquent'") {
-          const age = parseInt(situation["âge"]);
-          const qf = parseInt(situation["quotient familial"]);
-
-          if (qf <= 1000) {
-            const tranche = qf <= 600 ? "1" : qf <= 800 ? "2" : "3";
+          // Cas de gratuité - à traiter en premier, et si c'est le cas,
+          // ne pas ajouter d'autres explications de tarif standard
+          if (handicap >= 50) {
             newExplanations.push(
-              `Vous êtes éligible au tarif solidaire (tranche ${tranche}).`
+              "Vous bénéficiez de la gratuité en raison de votre situation de handicap (taux d'incapacité ≥ 50%)."
             );
-          }
-
-          if (age < 11) {
-            newExplanations.push("Tarif Pitchoun appliqué (moins de 11 ans).");
-          } else if (age <= 27) {
-            newExplanations.push("Tarif Jeune appliqué (11-27 ans).");
-          } else if (age >= 60) {
-            newExplanations.push("Tarif Senior appliqué (60 ans et plus).");
-          } else if (situation["salarié"] === "'oui'") {
-            newExplanations.push("Tarif Salarié appliqué.");
+          } else if (isCombattant) {
+            newExplanations.push(
+              "Vous bénéficiez de la gratuité en tant que titulaire de la carte du combattant."
+            );
+          } else if (qf <= 555) {
+            newExplanations.push(
+              "Vous êtes éligible à la gratuité (tarif solidaire tranche 1)."
+            );
           } else {
-            newExplanations.push("Tarif Classique appliqué (28-59 ans).");
+            // Si pas de gratuité, ajouter les explications de réduction et de catégorie
+            if (qf <= 775) {
+              newExplanations.push(
+                "Vous êtes éligible au tarif solidaire (tranche 2, réduction de 50%)."
+              );
+            } else if (qf <= 970) {
+              newExplanations.push(
+                "Vous êtes éligible au tarif solidaire (tranche 3, réduction de 30%)."
+              );
+            }
+
+            // Ajouter l'explication sur la catégorie d'âge seulement si pas de gratuité
+            const age = parseInt(situation["âge"]);
+            if (age < 5) {
+              newExplanations.push(
+                "Transport gratuit pour les moins de 5 ans."
+              );
+            } else if (age <= 10) {
+              newExplanations.push("Tarif Pitchoun appliqué (5-10 ans).");
+            } else if (age <= 27) {
+              newExplanations.push("Tarif Jeune appliqué (11-27 ans).");
+            } else if (age >= 60) {
+              newExplanations.push("Tarif Senior appliqué (60 ans et plus).");
+            } else if (situation["salarié entreprise partenaire"] === "'oui'") {
+              newExplanations.push("Tarif Salarié appliqué.");
+            } else {
+              newExplanations.push("Tarif Classique appliqué (28-59 ans).");
+            }
           }
         } else if (situation["type voyage"] === "'scolaire'") {
           newExplanations.push("Les transports scolaires sont gratuits.");
@@ -168,14 +173,14 @@ function TransportTarifSimulateur() {
               onChange={(e) => handleChange("type ticket", e.target.value)}
             >
               <option value="'1 voyage'">1 voyage</option>
-              <option value="'2 voyage'">2 voyages</option>
-              <option value="'10 voyage'">10 voyages</option>
+              <option value="'2 voyages'">2 voyages</option>
+              <option value="'10 voyages'">10 voyages</option>
             </select>
           </div>
         )}
 
         {situation["type voyage"] === "'occasionnel'" &&
-          situation["type ticket"] === "'10 voyage'" && (
+          situation["type ticket"] === "'10 voyages'" && (
             <div className="eligibility-section">
               <h3>Éligibilité au tarif réduit</h3>
 
@@ -195,6 +200,32 @@ function TransportTarifSimulateur() {
                 <select
                   value={situation["militaire"]}
                   onChange={(e) => handleChange("militaire", e.target.value)}
+                >
+                  <option value="'non'">Non</option>
+                  <option value="'oui'">Oui</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Titulaire de la carte du combattant ?</label>
+                <select
+                  value={situation["carte combattant"]}
+                  onChange={(e) =>
+                    handleChange("carte combattant", e.target.value)
+                  }
+                >
+                  <option value="'non'">Non</option>
+                  <option value="'oui'">Oui</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>En service civique ?</label>
+                <select
+                  value={situation["service civique"]}
+                  onChange={(e) =>
+                    handleChange("service civique", e.target.value)
+                  }
                 >
                   <option value="'non'">Non</option>
                   <option value="'oui'">Oui</option>
@@ -244,6 +275,11 @@ function TransportTarifSimulateur() {
                 min="0"
                 max="120"
               />
+              <small>
+                Différents tarifs s'appliquent selon votre tranche d'âge: moins
+                de 5 ans (gratuit), 5-10 ans (Pitchoun), 11-27 ans (Jeune),
+                28-59 ans (Classique/Salarié), 60 ans et plus (Senior)
+              </small>
             </div>
 
             <div className="form-group">
@@ -257,20 +293,66 @@ function TransportTarifSimulateur() {
                 min="0"
               />
               <small>
-                Montant fourni par la CAF ou calculé à partir de vos revenus
+                Montant fourni par la CAF ou calculé à partir de vos revenus. QF
+                ≤ 555€: gratuité / QF 556-775€: -50% / QF 776-970€: -30%
+              </small>
+            </div>
+
+            <div className="form-group">
+              <label>Taux d'incapacité (handicap)</label>
+              <input
+                type="number"
+                value={situation["situation handicap"]}
+                onChange={(e) =>
+                  handleChange("situation handicap", parseInt(e.target.value))
+                }
+                min="0"
+                max="100"
+              />
+              <small>
+                Entrez 0 si vous n'êtes pas en situation de handicap. Les
+                personnes avec un taux ≥ 50% bénéficient de la gratuité.
+              </small>
+            </div>
+
+            <div className="form-group">
+              <label>Titulaire de la carte du combattant ?</label>
+              <select
+                value={situation["carte combattant"]}
+                onChange={(e) =>
+                  handleChange("carte combattant", e.target.value)
+                }
+              >
+                <option value="'non'">Non</option>
+                <option value="'oui'">Oui</option>
+              </select>
+              <small>
+                Les titulaires de la carte du combattant bénéficient de la
+                gratuité des transports.
               </small>
             </div>
 
             {situation["âge"] >= 28 && situation["âge"] < 60 && (
               <div className="form-group">
-                <label>Êtes-vous salarié ?</label>
+                <label>
+                  Êtes-vous salarié d'une entreprise partenaire TBM ?
+                </label>
                 <select
-                  value={situation["salarié"]}
-                  onChange={(e) => handleChange("salarié", e.target.value)}
+                  value={situation["salarié entreprise partenaire"]}
+                  onChange={(e) =>
+                    handleChange(
+                      "salarié entreprise partenaire",
+                      e.target.value
+                    )
+                  }
                 >
                   <option value="'non'">Non</option>
                   <option value="'oui'">Oui</option>
                 </select>
+                <small>
+                  Les salariés des entreprises partenaires TBM bénéficient d'un
+                  tarif préférentiel.
+                </small>
               </div>
             )}
           </>
@@ -297,23 +379,64 @@ function TransportTarifSimulateur() {
               margin: "15px 0",
             }}
           >
-            {formatValue(result)} €
-            {situation["périodicité"] === "'mensuel'" &&
-            situation["type voyage"] === "'fréquent'"
-              ? "/mois"
-              : situation["périodicité"] === "'annuel'" &&
+            {result.nodeValue === 0 ? (
+              <span style={{ color: "#2ecc71" }}>Gratuit</span>
+            ) : (
+              <>
+                {formatValue(result)} €
+                {situation["périodicité"] === "'mensuel'" &&
                 situation["type voyage"] === "'fréquent'"
-              ? "/an"
-              : ""}
+                  ? "/mois"
+                  : situation["périodicité"] === "'annuel'" &&
+                    situation["type voyage"] === "'fréquent'"
+                  ? "/an"
+                  : ""}
+              </>
+            )}
           </div>
 
           {explanations.length > 0 && (
             <div className="explanations">
               <h3>Détails</h3>
-              <ul>
+              <ul style={{ listStyleType: "none", padding: "0" }}>
                 {explanations.map((explanation, index) => (
-                  <li key={index}>{explanation}</li>
+                  <li
+                    key={index}
+                    style={{
+                      padding: "6px 0",
+                      borderBottom:
+                        index < explanations.length - 1
+                          ? "1px solid #e0e0e0"
+                          : "none",
+                    }}
+                  >
+                    {explanation}
+                  </li>
                 ))}
+              </ul>
+            </div>
+          )}
+
+          {situation["type voyage"] === "'fréquent'" && (
+            <div
+              className="additional-info"
+              style={{ marginTop: "20px", fontSize: "14px" }}
+            >
+              <p>
+                <strong>Avantages inclus :</strong>
+              </p>
+              <ul>
+                <li>Validations illimitées pendant la période d'abonnement</li>
+                <li>Sur carte nominative TBM</li>
+                <li>
+                  Accès au programme de fidélité TBM fid' (inscription
+                  obligatoire)
+                </li>
+                <li>
+                  Valable sur tous les modes de transport de Bordeaux Métropole
+                  : Tramway, Bus, Bato et Cars régionaux (dans la limite des 28
+                  communes de Bordeaux Métropole)
+                </li>
               </ul>
             </div>
           )}

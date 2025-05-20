@@ -26,9 +26,9 @@ tarif occasionnel:
     variations:
       - si: type ticket = '1 voyage'
         alors: 2.10
-      - si: type ticket = '2 voyage'
+      - si: type ticket = '2 voyages'
         alors: 3.60
-      - si: type ticket = '10 voyage'
+      - si: type ticket = '10 voyages'
         alors: 
           variations:
             - si: tarif réduit
@@ -37,57 +37,79 @@ tarif occasionnel:
 
 type ticket:
   question: Quel type de ticket souhaitez-vous ?
-  par défaut: '1 voyage'
+  par défaut: "'1 voyage'"
   applicable si: type voyage = 'occasionnel'
   suggestions:
-    - '1 voyage'
-    - '2 voyage'
-    - '10 voyage'
+    - "'1 voyage'"
+    - "'2 voyages'"
+    - "'10 voyages'"
 
 tarif réduit:
   applicable si:
     toutes ces conditions:
       - type voyage = 'occasionnel'
-      - type ticket = '10 voyage'
+      - type ticket = '10 voyages'
   formule:
     une de ces conditions:
       - étudiant = 'oui'
       - famille nombreuse = 'oui'
       - militaire = 'oui'
-  description: Les tarifs réduits s'appliquent aux étudiants, familles nombreuses et militaires
+      - carte combattant = 'oui'
+      - service civique = 'oui'
+  description: Les tarifs réduits s'appliquent aux étudiants, familles nombreuses, militaires, titulaires de la carte du combattant et personnes en service civique
 
 étudiant:
   question: Êtes-vous étudiant ?
-  par défaut: 'non'
-  applicable si: type ticket = '10 voyage'
+  par défaut: "'non'"
+  applicable si: type ticket = '10 voyages'
   suggestions:
-    - 'oui'
-    - 'non'
+    - "'oui'"
+    - "'non'"
 
 militaire:
   question: Êtes-vous militaire ?
-  par défaut: 'non'
-  applicable si: type ticket = '10 voyage'
+  par défaut: "'non'"
+  applicable si: type ticket = '10 voyages'
   suggestions:
-    - 'oui'
-    - 'non'
+    - "'oui'"
+    - "'non'"
+
+carte combattant:
+  question: Êtes-vous titulaire d'une carte du combattant ?
+  par défaut: "'non'"
+  applicable si: type ticket = '10 voyages'
+  suggestions:
+    - "'oui'"
+    - "'non'"
+
+service civique:
+  question: Êtes-vous en service civique ?
+  par défaut: "'non'"
+  applicable si: type ticket = '10 voyages'
+  suggestions:
+    - "'oui'"
+    - "'non'"
 
 famille nombreuse:
   question: Avez-vous le statut de famille nombreuse ?
-  par défaut: 'non'
-  applicable si: type ticket = '10 voyage'
+  par défaut: "'non'"
+  applicable si: type ticket = '10 voyages'
   description: "Famille nombreuse = 3 enfants de moins de 18 ans dans le foyer, ou carte SNCF Famille Nombreuse, ou 5 enfants dans le foyer"
   suggestions:
-    - 'oui'
-    - 'non'
+    - "'oui'"
+    - "'non'"
 
 # Tarifs fréquents
 tarif fréquent:
   applicable si: type voyage = 'fréquent'
   formule:
     variations:
+      - si: situation handicap >= 50
+        alors: 0  # Gratuité pour handicap ≥ 50%
+      - si: carte combattant = 'oui'
+        alors: 0  # Gratuité pour titulaires de la carte du combattant
       - si: tranche solidaire = 'tranche 1'
-        alors: tarif solidaire 90
+        alors: 0  # Gratuité pour tranche 1
       - si: tranche solidaire = 'tranche 2'
         alors: tarif solidaire 50
       - si: tranche solidaire = 'tranche 3'
@@ -98,7 +120,12 @@ tarif standard:
   applicable si: type voyage = 'fréquent'
   formule:
     variations:
-      - si: âge < 11
+      - si: âge < 5
+        alors: 0  # Gratuit pour les moins de 5 ans
+      - si: 
+          toutes ces conditions:
+            - âge >= 5
+            - âge <= 10
         alors: tarif pitchoun
       - si: 
           toutes ces conditions:
@@ -109,13 +136,13 @@ tarif standard:
           toutes ces conditions:
             - âge >= 28
             - âge < 60
-            - salarié = 'oui'
+            - salarié entreprise partenaire = 'oui'
         alors: tarif salarié
       - si:
           toutes ces conditions:
             - âge >= 28
             - âge < 60
-            - salarié = 'non'
+            - salarié entreprise partenaire = 'non'
         alors: tarif classique
       - si: âge >= 60
         alors: tarif senior
@@ -134,7 +161,7 @@ tarif jeune:
   formule:
     variations:
       - si: périodicité = 'mensuel'
-        alors: 35.10
+        alors: 20.80
       - si: périodicité = 'annuel'
         alors: 249.60
 
@@ -143,7 +170,7 @@ tarif classique:
   formule:
     variations:
       - si: périodicité = 'mensuel'
-        alors: 52.80
+        alors: 44.40
       - si: périodicité = 'annuel'
         alors: 532.80
 
@@ -166,29 +193,95 @@ tarif salarié:
         alors: 426.00
 
 # Tarifs solidaires
-
-tarif solidaire 90:
+tarif solidaire 50:
   applicable si: 
     toutes ces conditions:
       - type voyage = 'fréquent'
-      - tranche solidaire = 'tranche 1'
-  formule: tarif standard * 0.1  # Hypothèse: réduction de 90%
-
-
-tarif solidaire 50:
-  applicable si:
-    toutes ces conditions:
-      - type voyage = 'fréquent'
       - tranche solidaire = 'tranche 2'
-  formule: tarif standard * 0.5  # Réduction de 50%
-
+  formule:
+    variations:
+      - si: 
+          toutes ces conditions:
+            - âge >= 5
+            - âge <= 10
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 6.10
+            - si: périodicité = 'annuel'
+              alors: 73.20
+      - si: 
+          toutes ces conditions:
+            - âge >= 11
+            - âge <= 27
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 10.40
+            - si: périodicité = 'annuel'
+              alors: 124.80
+      - si:
+          toutes ces conditions:
+            - âge >= 28
+            - âge < 60
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 22.20
+            - si: périodicité = 'annuel'
+              alors: 266.40
+      - si: âge >= 60
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 16.00
+            - si: périodicité = 'annuel'
+              alors: 192.00
 
 tarif solidaire 30:
   applicable si:
     toutes ces conditions:
       - type voyage = 'fréquent'
       - tranche solidaire = 'tranche 3'
-  formule: tarif standard * 0.7  # Réduction de 30% (donc 70% du tarif standard)
+  formule:
+    variations:
+      - si: 
+          toutes ces conditions:
+            - âge >= 5
+            - âge <= 10
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 8.50
+            - si: périodicité = 'annuel'
+              alors: 102.00
+      - si: 
+          toutes ces conditions:
+            - âge >= 11
+            - âge <= 27
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 14.60
+            - si: périodicité = 'annuel'
+              alors: 175.20
+      - si:
+          toutes ces conditions:
+            - âge >= 28
+            - âge < 60
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 31.10
+            - si: périodicité = 'annuel'
+              alors: 373.20
+      - si: âge >= 60
+        alors:
+          variations:
+            - si: périodicité = 'mensuel'
+              alors: 22.40
+            - si: périodicité = 'annuel'
+              alors: 268.80
 
 périodicité:
   question: Quelle est la périodicité de votre abonnement ?
@@ -209,29 +302,40 @@ périodicité:
 
 quotient familial:
   question: Quel est votre quotient familial ?
-  par défaut: 1200
+  par défaut: 1000
   description: Montant fourni par la CAF ou calculé à partir de vos revenus
 
 tranche solidaire:
   applicable si: type voyage = 'fréquent'
   formule:
     variations:
-      - si: quotient familial <= 600
+      - si: quotient familial <= 555
         alors: "'tranche 1'"
-      - si: quotient familial <= 800
+      - si: quotient familial <= 775
         alors: "'tranche 2'"
-      - si: quotient familial <= 1000
+      - si: quotient familial <= 970
         alors: "'tranche 3'"
       - sinon: "'aucune'"
 
-salarié:
-  question: Êtes-vous salarié ?
-  par défaut: 'non'
+situation handicap:
+  question: Quel est votre taux d'incapacité (handicap) ?
+  par défaut: 0
+  description: Taux d'incapacité en pourcentage (0 si aucun handicap)
+  suggestions:
+    aucun: 0
+    taux faible: 30
+    taux moyen: 45
+    taux élevé: 70
+
+salarié entreprise partenaire:
+  question: Êtes-vous salarié d'une entreprise partenaire TBM ?
+  par défaut: "'non'"
   applicable si: 
     toutes ces conditions:
       - type voyage = 'fréquent'
       - âge >= 28
       - âge < 60
   suggestions:
-    non: 'non'
-    oui: 'oui'
+    - "'non'"
+    - "'oui'"
+  description: Les salariés des entreprises partenaires TBM bénéficient d'un tarif préférentiel
