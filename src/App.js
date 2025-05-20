@@ -1,14 +1,16 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Home";
-import TarifSimulateur from "./TarifSimulateur";
+import TarifSimulateurLille from "./TarifSimulateurLille";
+import TarifSimulateurBordeaux from "./TarifSimulateurBordeaux";
 import DoucheSimulateur from "./DoucheSimulateur";
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/tarifs" element={<TarifSimulateur />} />
+        <Route path="/tarifs-lille" element={<TarifSimulateurLille />} />
+        <Route path="/tarifs-bordeaux" element={<TarifSimulateurBordeaux />} />
         <Route path="/co2-douche" element={<DoucheSimulateur />} />
       </Routes>
     </Router>

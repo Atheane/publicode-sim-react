@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Engine, { formatValue } from "publicodes";
 import yaml from "js-yaml";
 
-function TransportTarifSimulateur() {
+function TransportTarifSimulateurBordeaux() {
   const [engine, setEngine] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ function TransportTarifSimulateur() {
 
   useEffect(() => {
     // Charge le fichier YAML depuis le dossier public
-    fetch(process.env.PUBLIC_URL + "/tarifs-transport.publicodes.yaml")
+    fetch(process.env.PUBLIC_URL + "/tarifs-transport-bordeaux.publicodes.yaml")
       .then((response) => {
         if (!response.ok) throw new Error("Fichier YAML non trouvé");
         return response.text();
@@ -445,4 +445,4 @@ function TransportTarifSimulateur() {
   );
 }
 
-export default TransportTarifSimulateur;
+export default TransportTarifSimulateurBordeaux;

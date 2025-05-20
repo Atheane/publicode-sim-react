@@ -1,0 +1,241 @@
+tarif:
+  titre: Tarif de transport Lille Métropole
+  description: Calcul du tarif de transport en fonction de votre situation dans la métropole de Lille
+  icônes: 🚌 💳
+  formule: 
+    variations:
+      - si: type voyage = 'unitaire'
+        alors: tarif unitaire
+      - si: type voyage = 'pass'
+        alors: tarif pass
+      - si: type voyage = 'abonnement'
+        alors: tarif abonnement
+
+type voyage:
+  question: Quel type de titre souhaitez-vous ?
+  par défaut: "'unitaire'"
+  suggestions:
+    - "'unitaire'"
+    - "'pass'"
+    - "'abonnement'"
+
+# Tarifs unitaires
+tarif unitaire:
+  applicable si: type voyage = 'unitaire'
+  formule:
+    variations:
+      - si: type unitaire = 'simple'
+        alors: 1.80
+      - si: type unitaire = 'carnet 10'
+        alors: 15.60
+
+type unitaire:
+  question: Quel type de titre unitaire souhaitez-vous ?
+  par défaut: "'simple'"
+  applicable si: type voyage = 'unitaire'
+  suggestions:
+    - "'simple'"
+    - "'carnet 10'"
+
+# Tarifs pass
+tarif pass:
+  applicable si: type voyage = 'pass'
+  formule:
+    variations:
+      - si: type pass = 'soirée'
+        alors: 2.50
+      - si: type pass = '1 jour'
+        alors: 5.40
+      - si: type pass = '2 jours'
+        alors: 9.80
+      - si: type pass = '3 jours'
+        alors: 13.00
+      - si: type pass = '4 jours'
+        alors: 15.10
+      - si: type pass = '5 jours'
+        alors: 16.80
+      - si: type pass = '6 jours'
+        alors: 17.90
+      - si: type pass = '7 jours'
+        alors: 18.40
+
+type pass:
+  question: Quel type de pass souhaitez-vous ?
+  par défaut: "'1 jour'"
+  applicable si: type voyage = 'pass'
+  suggestions:
+    - "'soirée'"
+    - "'1 jour'"
+    - "'2 jours'"
+    - "'3 jours'"
+    - "'4 jours'"
+    - "'5 jours'"
+    - "'6 jours'"
+    - "'7 jours'"
+
+# Tarifs abonnements
+tarif abonnement:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: mineur mel
+        alors: 0
+      - si: 
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - quotient familial <= 374
+        alors: tarif jeune qf1
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - quotient familial > 374
+            - quotient familial <= 537
+        alors: tarif jeune qf2
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - quotient familial > 537
+            - quotient familial <= 716
+        alors: tarif jeune qf3
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - css ou ame = 'oui'
+        alors: tarif jeune css
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+        alors: tarif jeune standard
+      - si:
+          toutes ces conditions:
+            - âge >= 65
+            - quotient familial <= 374
+        alors: tarif senior qf1
+      - sinon: tarif tout public
+
+mineur mel:
+  applicable si: type voyage = 'abonnement'
+  formule: 
+    toutes ces conditions:
+      - âge < 18
+      - habitant mel = 'oui'
+
+tarif jeune qf1:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: type abonnement = 'permanent'
+        alors: 3.40
+      - si: type abonnement = '10 mois'
+        alors: 3.40
+      - si: type abonnement = 'mensuel'
+        alors: 3.95
+
+tarif jeune qf2:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: type abonnement = 'permanent'
+        alors: 8.05
+      - si: type abonnement = '10 mois'
+        alors: 8.05
+      - si: type abonnement = 'mensuel'
+        alors: 9.50
+
+tarif jeune qf3:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: type abonnement = 'permanent'
+        alors: 13.50
+      - si: type abonnement = '10 mois'
+        alors: 13.50
+      - si: type abonnement = 'mensuel'
+        alors: 15.75
+
+tarif jeune css:
+  applicable si: type voyage = 'abonnement'
+  formule: 15.75
+
+tarif jeune standard:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: type abonnement = 'permanent'
+        alors: 27.00
+      - si: type abonnement = '10 mois'
+        alors: 27.00
+      - si: type abonnement = 'mensuel'
+        alors: 31.50
+
+tarif senior qf1:
+  applicable si: type voyage = 'abonnement'
+  formule: 3.40
+
+tarif tout public:
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: type abonnement = 'permanent'
+        alors: 55.00
+      - si: type abonnement = 'mensuel'
+        alors: 63.00
+
+type abonnement:
+  question: Quel type d'abonnement souhaitez-vous ?
+  par défaut: "'mensuel'"
+  applicable si: type voyage = 'abonnement'
+  formule:
+    variations:
+      - si: 
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+        alors: type abonnement jeune
+      - sinon: type abonnement adulte
+
+type abonnement jeune:
+  question: Quel type d'abonnement souhaitez-vous ?
+  suggestions:
+    - "'permanent'"
+    - "'10 mois'"
+    - "'mensuel'"
+
+type abonnement adulte:
+  question: Quel type d'abonnement souhaitez-vous ?
+  suggestions:
+    - "'permanent'"
+    - "'mensuel'"
+
+âge:
+  question: Quel est votre âge ?
+  par défaut: 30
+  suggestions:
+    enfant: 10
+    jeune: 20
+    adulte: 35
+    senior: 70
+
+quotient familial:
+  question: Quel est votre quotient familial CAF ?
+  par défaut: 750
+  description: Montant fourni par la CAF ou calculé à partir de vos revenus
+
+css ou ame:
+  question: Êtes-vous bénéficiaire de la CSS non participative ou de l'AME ?
+  par défaut: "'non'"
+  suggestions:
+    - "'oui'"
+    - "'non'"
+
+habitant mel:
+  question: Habitez-vous dans la Métropole Européenne de Lille (MEL) ?
+  par défaut: "'oui'"
+  suggestions:
+    - "'oui'"
+    - "'non'"
