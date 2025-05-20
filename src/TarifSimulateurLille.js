@@ -18,6 +18,10 @@ function LilleTransportTarifSimulateur() {
     "quotient familial": 750,
     "css ou ame": "'non'",
     "habitant mel": "'oui'",
+    "bénéficiaire rsa": "'non'",
+    handipole: "'non'",
+    "éligible tarif coquelicot": "'non'",
+    "éligible tarif iris": "'non'",
   });
 
   useEffect(() => {
@@ -53,21 +57,26 @@ function LilleTransportTarifSimulateur() {
 
         // Déterminer le type de voyage et les explications associées
         if (situation["type voyage"] === "'unitaire'") {
-          if (situation["type unitaire"] === "'simple'") {
+          if (situation["bénéficiaire rsa"] === "'oui'") {
+            newExplanations.push(
+              "Carnet de 10 trajets au tarif RSA (bénéficiaires du RSA socle non majoré pour situation d'isolement)"
+            );
+          } else if (situation["handipole"] === "'oui'") {
+            newExplanations.push(
+              "Tarif Handipole pour les personnes à mobilité réduite"
+            );
+          } else if (situation["type unitaire"] === "'simple'") {
             newExplanations.push(
               "Titre valable 1h dans toute la MEL, entre la 1ère et la dernière validation"
-            );
-            newExplanations.push(
-              "Valable sur les réseaux ilévia, Arc en Ciel et TER"
             );
           } else if (situation["type unitaire"] === "'carnet 10'") {
             newExplanations.push(
               "Carnet de 10 trajets, chacun valable 1h entre la 1ère et la dernière validation"
             );
-            newExplanations.push(
-              "Valable sur les réseaux ilévia, Arc en Ciel et TER"
-            );
           }
+          newExplanations.push(
+            "Valable sur les réseaux ilévia, Arc en Ciel et TER"
+          );
         } else if (situation["type voyage"] === "'pass'") {
           if (situation["type pass"] === "'soirée'") {
             newExplanations.push(
@@ -77,73 +86,87 @@ function LilleTransportTarifSimulateur() {
               "Valable sur les réseaux ilévia et Arc en Ciel"
             );
           } else {
-            const jours = parseInt(situation["type pass"].replace(/['"]/g, ""));
-            if (!isNaN(jours)) {
-              const heures = jours * 24;
+            const jours = situation["type pass"].replace(/['"]/g, "");
+            if (jours === "1 jour") {
               newExplanations.push(
-                `Voyagez en illimité pendant ${heures} heures après la 1ère validation`
+                "Voyagez en illimité pendant 24 heures après la 1ère validation"
               );
+            } else {
+              const nombreJours = jours.split(" ")[0];
               newExplanations.push(
-                "Valable sur les réseaux ilévia, Arc en Ciel et TER"
+                `Voyagez en illimité pendant ${nombreJours} jours après la 1ère validation`
               );
             }
+            newExplanations.push(
+              "Valable sur les réseaux ilévia, Arc en Ciel et TER"
+            );
           }
         } else if (situation["type voyage"] === "'abonnement'") {
           const age = parseInt(situation["âge"]);
           const qf = parseInt(situation["quotient familial"]);
 
-          if (age < 18 && situation["habitant mel"] === "'oui'") {
+          if (situation["éligible tarif coquelicot"] === "'oui'") {
+            newExplanations.push(
+              "Vous bénéficiez du tarif Coquelicot réservé aux non ou mal voyants"
+            );
+          } else if (situation["éligible tarif iris"] === "'oui'") {
+            newExplanations.push(
+              "Vous bénéficiez du tarif Iris réservé aux demandeurs d'emploi sous certaines conditions"
+            );
+          } else if (age < 18 && situation["habitant mel"] === "'oui'") {
             newExplanations.push(
               "Titre gratuit réservé aux habitants de la MEL de moins de 18 ans"
             );
-            newExplanations.push(
-              "Valable sur les réseaux ilévia et Arc en Ciel"
-            );
-          } else if (age >= 4 && age <= 25) {
-            if (situation["type abonnement"] === "'10 mois'") {
+          } else {
+            if (age >= 4 && age <= 25) {
+              newExplanations.push("Tarif 4-25 ans");
+
+              if (
+                situation["type abonnement"] === "'10 mois'" &&
+                situation["habitant mel"] === "'oui'"
+              ) {
+                newExplanations.push(
+                  "Abonnement 10 mois valable du 1er septembre au 30 juin (réservé aux habitants de la MEL)"
+                );
+              }
+            } else if (age >= 65) {
+              newExplanations.push("Tarif 65 ans et plus");
+            } else {
+              newExplanations.push("Tarif tout public (26-64 ans)");
+            }
+
+            if (situation["type abonnement"] === "'permanent'") {
               newExplanations.push(
-                "Abonnement valable du 1er septembre au 30 juin"
-              );
-            } else if (situation["type abonnement"] === "'permanent'") {
-              newExplanations.push(
-                "Abonnement établi pour 12 mois minimum avec poursuite jusqu'à résiliation"
+                "Abonnement permanent avec engagement minimum de 12 mois"
               );
             }
-            newExplanations.push(
-              "Valable sur les réseaux ilévia, Arc en Ciel et TER"
-            );
 
-            if (qf <= 374) {
-              newExplanations.push(
-                "Vous bénéficiez du tarif solidaire QF1 (QF ≤ 374€)"
-              );
-            } else if (qf <= 537) {
-              newExplanations.push(
-                "Vous bénéficiez du tarif solidaire QF2 (QF entre 375€ et 537€)"
-              );
-            } else if (qf <= 716) {
-              newExplanations.push(
-                "Vous bénéficiez du tarif solidaire QF3 (QF entre 538€ et 716€)"
-              );
-            } else if (situation["css ou ame"] === "'oui'") {
+            if (situation["habitant mel"] === "'oui'") {
+              if (qf <= 374) {
+                newExplanations.push(
+                  "Vous bénéficiez du tarif solidaire QF1 (QF ≤ 374€)"
+                );
+              } else if (qf <= 537) {
+                newExplanations.push(
+                  "Vous bénéficiez du tarif solidaire QF2 (QF entre 375€ et 537€)"
+                );
+              } else if (qf <= 716) {
+                newExplanations.push(
+                  "Vous bénéficiez du tarif solidaire QF3 (QF entre 538€ et 716€)"
+                );
+              }
+            }
+
+            if (situation["css ou ame"] === "'oui'") {
               newExplanations.push(
                 "Vous bénéficiez du tarif réservé aux bénéficiaires de la CSS non participative ou de l'AME"
               );
             }
-          } else if (age >= 65 && qf <= 374) {
-            newExplanations.push(
-              "Vous bénéficiez du tarif senior solidaire QF1 (QF ≤ 374€)"
-            );
-          } else {
-            if (situation["type abonnement"] === "'permanent'") {
-              newExplanations.push(
-                "Abonnement établi pour 12 mois minimum avec poursuite jusqu'à résiliation"
-              );
-            }
-            newExplanations.push(
-              "Valable sur les réseaux ilévia, Arc en Ciel et TER"
-            );
           }
+
+          newExplanations.push(
+            "Valable sur les réseaux ilévia, Arc en Ciel et TER dans la MEL"
+          );
         }
 
         setExplanations(newExplanations);
@@ -191,16 +214,47 @@ function LilleTransportTarifSimulateur() {
         </div>
 
         {situation["type voyage"] === "'unitaire'" && (
-          <div className="form-group">
-            <label>Type de titre unitaire</label>
-            <select
-              value={situation["type unitaire"]}
-              onChange={(e) => handleChange("type unitaire", e.target.value)}
-            >
-              <option value="'simple'">Trajet unitaire</option>
-              <option value="'carnet 10'">Carnet 10 trajets</option>
-            </select>
-          </div>
+          <>
+            <div className="form-group">
+              <label>Êtes-vous bénéficiaire du RSA socle non majoré ?</label>
+              <select
+                value={situation["bénéficiaire rsa"]}
+                onChange={(e) =>
+                  handleChange("bénéficiaire rsa", e.target.value)
+                }
+              >
+                <option value="'non'">Non</option>
+                <option value="'oui'">Oui</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Utilisez-vous le service Handipole ?</label>
+              <select
+                value={situation["handipole"]}
+                onChange={(e) => handleChange("handipole", e.target.value)}
+              >
+                <option value="'non'">Non</option>
+                <option value="'oui'">Oui</option>
+              </select>
+            </div>
+
+            {situation["bénéficiaire rsa"] === "'non'" &&
+              situation["handipole"] === "'non'" && (
+                <div className="form-group">
+                  <label>Type de titre unitaire</label>
+                  <select
+                    value={situation["type unitaire"]}
+                    onChange={(e) =>
+                      handleChange("type unitaire", e.target.value)
+                    }
+                  >
+                    <option value="'simple'">Trajet unitaire</option>
+                    <option value="'carnet 10'">Carnet 10 trajets</option>
+                  </select>
+                </div>
+              )}
+          </>
         )}
 
         {situation["type voyage"] === "'pass'" && (
@@ -225,103 +279,146 @@ function LilleTransportTarifSimulateur() {
         {situation["type voyage"] === "'abonnement'" && (
           <>
             <div className="form-group">
-              <label>Âge</label>
-              <input
-                type="number"
-                value={situation["âge"]}
-                onChange={(e) => handleChange("âge", parseInt(e.target.value))}
-                min="0"
-                max="120"
-              />
-              <small>
-                Les tarifs varient selon l'âge: moins de 18 ans (gratuit pour
-                les habitants de la MEL), 4-25 ans (tarifs jeunes), 65 ans et
-                plus (tarifs seniors)
-              </small>
+              <label>
+                Êtes-vous non ou mal voyant avec carte mobilité inclusion
+                mention cécité ?
+              </label>
+              <select
+                value={situation["éligible tarif coquelicot"]}
+                onChange={(e) =>
+                  handleChange("éligible tarif coquelicot", e.target.value)
+                }
+              >
+                <option value="'non'">Non</option>
+                <option value="'oui'">Oui</option>
+              </select>
             </div>
 
             <div className="form-group">
-              <label>Habitant de la MEL ?</label>
+              <label>
+                Êtes-vous demandeur d'emploi avec accompagnement renforcé ?
+              </label>
               <select
-                value={situation["habitant mel"]}
-                onChange={(e) => handleChange("habitant mel", e.target.value)}
+                value={situation["éligible tarif iris"]}
+                onChange={(e) =>
+                  handleChange("éligible tarif iris", e.target.value)
+                }
               >
-                <option value="'oui'">Oui</option>
                 <option value="'non'">Non</option>
+                <option value="'oui'">Oui</option>
               </select>
-              <small>
-                La gratuité pour les moins de 18 ans est réservée aux habitants
-                de la Métropole Européenne de Lille
-              </small>
             </div>
 
-            {!(
-              parseInt(situation["âge"]) < 18 &&
-              situation["habitant mel"] === "'oui'"
-            ) && (
-              <>
-                <div className="form-group">
-                  <label>Type d'abonnement</label>
-                  <select
-                    value={situation["type abonnement"]}
-                    onChange={(e) =>
-                      handleChange("type abonnement", e.target.value)
-                    }
-                  >
-                    {parseInt(situation["âge"]) >= 4 &&
-                    parseInt(situation["âge"]) <= 25 ? (
-                      <>
-                        <option value="'mensuel'">Mensuel</option>
-                        <option value="'permanent'">Permanent</option>
-                        <option value="'10 mois'">10 mois (Sept-Juin)</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="'mensuel'">Mensuel</option>
-                        <option value="'permanent'">Permanent</option>
-                      </>
-                    )}
-                  </select>
-                </div>
+            {situation["éligible tarif coquelicot"] === "'non'" &&
+              situation["éligible tarif iris"] === "'non'" && (
+                <>
+                  <div className="form-group">
+                    <label>Âge</label>
+                    <input
+                      type="number"
+                      value={situation["âge"]}
+                      onChange={(e) =>
+                        handleChange("âge", parseInt(e.target.value))
+                      }
+                      min="0"
+                      max="120"
+                    />
+                    <small>
+                      Les tarifs varient selon l'âge: moins de 18 ans (gratuit
+                      pour les habitants de la MEL), 4-25 ans, 26-64 ans, 65 ans
+                      et plus
+                    </small>
+                  </div>
 
-                <div className="form-group">
-                  <label>Quotient familial CAF</label>
-                  <input
-                    type="number"
-                    value={situation["quotient familial"]}
-                    onChange={(e) =>
-                      handleChange(
-                        "quotient familial",
-                        parseInt(e.target.value)
-                      )
-                    }
-                    min="0"
-                  />
-                  <small>
-                    Montant fourni par la CAF - QF ≤ 374€: tarif QF1 / QF
-                    375-537€: tarif QF2 / QF 538-716€: tarif QF3
-                  </small>
-                </div>
+                  <div className="form-group">
+                    <label>Habitant de la MEL ?</label>
+                    <select
+                      value={situation["habitant mel"]}
+                      onChange={(e) =>
+                        handleChange("habitant mel", e.target.value)
+                      }
+                    >
+                      <option value="'oui'">Oui</option>
+                      <option value="'non'">Non</option>
+                    </select>
+                    <small>
+                      La gratuité pour les moins de 18 ans et les tarifs
+                      solidaires sont réservés aux habitants de la Métropole
+                      Européenne de Lille
+                    </small>
+                  </div>
 
-                {parseInt(situation["âge"]) >= 4 &&
-                  parseInt(situation["âge"]) <= 25 && (
-                    <div className="form-group">
-                      <label>
-                        Bénéficiaire de la CSS non participative ou de l'AME ?
-                      </label>
-                      <select
-                        value={situation["css ou ame"]}
-                        onChange={(e) =>
-                          handleChange("css ou ame", e.target.value)
-                        }
-                      >
-                        <option value="'non'">Non</option>
-                        <option value="'oui'">Oui</option>
-                      </select>
-                    </div>
+                  {!(
+                    parseInt(situation["âge"]) < 18 &&
+                    situation["habitant mel"] === "'oui'"
+                  ) && (
+                    <>
+                      <div className="form-group">
+                        <label>Type d'abonnement</label>
+                        <select
+                          value={situation["type abonnement"]}
+                          onChange={(e) =>
+                            handleChange("type abonnement", e.target.value)
+                          }
+                        >
+                          {parseInt(situation["âge"]) >= 4 &&
+                          parseInt(situation["âge"]) <= 25 &&
+                          situation["habitant mel"] === "'oui'" ? (
+                            <>
+                              <option value="'mensuel'">Mensuel</option>
+                              <option value="'permanent'">Permanent</option>
+                              <option value="'10 mois'">
+                                10 mois (Sept-Juin)
+                              </option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="'mensuel'">Mensuel</option>
+                              <option value="'permanent'">Permanent</option>
+                            </>
+                          )}
+                        </select>
+                      </div>
+
+                      {situation["habitant mel"] === "'oui'" && (
+                        <div className="form-group">
+                          <label>Quotient familial CAF</label>
+                          <input
+                            type="number"
+                            value={situation["quotient familial"]}
+                            onChange={(e) =>
+                              handleChange(
+                                "quotient familial",
+                                parseInt(e.target.value)
+                              )
+                            }
+                            min="0"
+                          />
+                          <small>
+                            Montant fourni par la CAF - QF ≤ 374€: tarif QF1 /
+                            QF 375-537€: tarif QF2 / QF 538-716€: tarif QF3
+                          </small>
+                        </div>
+                      )}
+
+                      <div className="form-group">
+                        <label>
+                          Bénéficiaire de la CSS non participative ou de l'AME ?
+                        </label>
+                        <select
+                          value={situation["css ou ame"]}
+                          onChange={(e) =>
+                            handleChange("css ou ame", e.target.value)
+                          }
+                        >
+                          <option value="'non'">Non</option>
+                          <option value="'oui'">Oui</option>
+                        </select>
+                      </div>
+                    </>
                   )}
-              </>
-            )}
+                </>
+              )}
           </>
         )}
       </div>
@@ -352,6 +449,10 @@ function LilleTransportTarifSimulateur() {
               <>
                 {formatValue(result)} €
                 {situation["type voyage"] === "'abonnement'" ? "/mois" : ""}
+                {situation["type voyage"] === "'unitaire'" &&
+                situation["type unitaire"] === "'carnet 10'"
+                  ? " (carnet de 10)"
+                  : ""}
               </>
             )}
           </div>
@@ -401,6 +502,12 @@ function LilleTransportTarifSimulateur() {
                 {situation["type abonnement"] === "'10 mois'" && (
                   <li>
                     L'abonnement 10 mois est valable du 1er septembre au 30 juin
+                  </li>
+                )}
+                {situation["habitant mel"] === "'oui'" && (
+                  <li>
+                    Les tarifs solidaires (QF1, QF2, QF3) sont réservés aux
+                    habitants de la MEL
                   </li>
                 )}
               </ul>
