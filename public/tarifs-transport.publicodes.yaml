@@ -1,0 +1,225 @@
+tarif:
+  titre: Tarif de transport
+  description: Calcul du tarif de transport en fonction de votre situation
+  icônes: 🚌 💳
+  formule: 
+    variations:
+      - si: type voyage = 'occasionnel'
+        alors: tarif occasionnel
+      - si: type voyage = 'fréquent'
+        alors: tarif fréquent
+      - si: type voyage = 'scolaire'
+        alors: 0
+
+type voyage:
+  question: Quel type de voyage souhaitez-vous effectuer ?
+  par défaut: "'occasionnel'"
+  suggestions:
+    - "'occasionnel'"
+    - "'fréquent'"
+    - "'scolaire'"
+
+# Tarifs occasionnels
+tarif occasionnel:
+  applicable si: type voyage = 'occasionnel'
+  formule:
+    variations:
+      - si: type ticket = '1 voyage'
+        alors: 2.10
+      - si: type ticket = '2 voyage'
+        alors: 3.60
+      - si: type ticket = '10 voyage'
+        alors: 
+          variations:
+            - si: tarif réduit applicable
+              alors: 8.40
+            - sinon: 16.80
+
+type ticket:
+  question: Quel type de ticket souhaitez-vous ?
+  par défaut: '1 voyage'
+  applicable si: type voyage = 'occasionnel'
+  suggestions:
+    - '1 voyage'
+    - '2 voyage'
+    - '10 voyage'
+
+tarif réduit applicable:
+  applicable si: type ticket = '10 voyage'
+  formule: étudiant = 'oui' ou famille nombreuse = 'oui' ou militaire = 'oui'
+  description: Les tarifs réduits s'appliquent aux étudiants, familles nombreuses et militaires
+
+étudiant:
+  question: Êtes-vous étudiant ?
+  par défaut: 'non'
+  applicable si: type ticket = '10 voyage'
+  suggestions:
+    - 'oui'
+    - 'non'
+
+militaire:
+  question: Êtes-vous militaire ?
+  par défaut: 'non'
+  applicable si: type ticket = '10 voyage'
+  suggestions:
+    - 'oui'
+    - 'non'
+
+famille nombreuse:
+  question: Avez-vous le statut de famille nombreuse ?
+  par défaut: 'non'
+  applicable si: type ticket = '10 voyage'
+  description: "Famille nombreuse = 3 enfants de moins de 18 ans dans le foyer, ou carte SNCF Famille Nombreuse, ou 5 enfants dans le foyer"
+  suggestions:
+    - 'oui'
+    - 'non'
+
+# Tarifs fréquents
+tarif fréquent:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: tranche solidaire = 'tranche 2'
+        alors: tarif solidaire 50
+      - si: tranche solidaire = 'tranche 3'
+        alors: tarif solidaire 30
+      - sinon: tarif standard
+
+tarif standard:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: âge < 11
+        alors: tarif pitchoun
+      - si: âge >= 11 et âge <= 27
+        alors: tarif jeune
+      - si: âge >= 28 et âge < 60
+        alors: 
+          variations:
+            - si: salarié = 'oui'
+              alors: tarif salarié 
+            - sinon: tarif classique
+      - si: âge >= 60
+        alors: tarif senior
+
+tarif pitchoun:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: périodicité = 'mensuel'
+        alors: 12.20
+      - si: périodicité = 'annuel'
+        alors: 146.40
+
+tarif jeune:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: périodicité = 'mensuel'
+        alors: 35.10
+      - si: périodicité = 'annuel'
+        alors: 249.60
+
+tarif classique:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: périodicité = 'mensuel'
+        alors: 52.80
+      - si: périodicité = 'annuel'
+        alors: 532.80
+
+tarif senior:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: périodicité = 'mensuel'
+        alors: 32.00
+      - si: périodicité = 'annuel'
+        alors: 384.00
+
+tarif salarié:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: périodicité = 'mensuel'
+        alors: 35.50
+      - si: périodicité = 'annuel'
+        alors: 426.00
+
+# Tarifs solidaires
+tarif solidaire 50:
+  applicable si: type voyage = 'fréquent' et périodicité = 'mensuel'
+  formule:
+    variations:
+      - si: âge < 11
+        alors: 8.90
+      - si: âge >= 11 et âge <= 27
+        alors: 17.60
+      - si: âge >= 28 et âge < 60
+        alors: 26.40
+      - si: âge >= 60
+        alors: 20.10
+
+tarif solidaire 30:
+  applicable si: type voyage = 'fréquent' et périodicité = 'mensuel'
+  formule:
+    variations:
+      - si: âge < 11
+        alors: 12.50
+      - si: âge >= 11 et âge <= 27
+        alors: 24.60
+      - si: âge >= 28 et âge < 60
+        alors: 37.00
+      - si: âge >= 60
+        alors: 28.10
+
+périodicité:
+  question: Quelle est la périodicité de votre abonnement ?
+  par défaut: "'mensuel'"
+  applicable si: type voyage = 'fréquent'
+  suggestions:
+    - "'mensuel'"
+    - "'annuel'"
+
+âge:
+  question: Quel est votre âge ?
+  par défaut: 30
+  suggestions:
+    enfant: 8
+    jeune: 18
+    adulte: 35
+    senior: 65
+
+quotient familial:
+  question: Quel est votre quotient familial ?
+  par défaut: 1200
+  description: Montant fourni par la CAF ou calculé à partir de vos revenus
+  suggestions:
+    faible: 600
+    moyen: 900
+    élevé: 1500
+
+tranche solidaire:
+  applicable si: type voyage = 'fréquent'
+  formule:
+    variations:
+      - si: quotient familial <= 600
+        alors: "'tranche 1'"
+      - si: quotient familial <= 800
+        alors: "'tranche 2'"
+      - si: quotient familial <= 1000
+        alors: "'tranche 3'"
+      - sinon: "'aucune'"
+
+salarié:
+  question: Êtes-vous salarié ?
+  par défaut: 'non'
+  applicable si: 
+    toutes ces conditions:
+      - type voyage = 'fréquent'
+      - âge >= 28
+      - âge < 60
+  suggestions:
+    non: 'non'
+    oui: 'oui'
