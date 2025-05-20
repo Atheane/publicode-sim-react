@@ -46,14 +46,45 @@ function TransportTarifSimulateur() {
     if (engine) {
       try {
         engine.setSituation(situation);
+        console.log(
+          "Âge condition:",
+          engine.evaluate("âge >= 28 et âge < 60").nodeValue
+        );
+        console.log(
+          "Salarié condition:",
+          engine.evaluate("salarié = 'oui'").nodeValue
+        );
+        console.log("Tarif jeune:", engine.evaluate("tarif jeune").nodeValue);
+        console.log(
+          "Tarif salarié:",
+          engine.evaluate("tarif salarié").nodeValue
+        );
+        console.log(
+          "Tarif standard calculé:",
+          engine.evaluate("tarif standard").nodeValue
+        );
+        console.log(
+          "Condition âge < 11:",
+          engine.evaluate("âge < 11").nodeValue
+        );
+        console.log(
+          "Condition âge >= 11 et âge <= 27:",
+          engine.evaluate("âge >= 11 et âge <= 27").nodeValue
+        );
+        console.log(
+          "Condition âge >= 28 et âge < 60:",
+          engine.evaluate("âge >= 28 et âge < 60").nodeValue
+        );
         const result = engine.evaluate("tarif");
         setResult(result);
-
+        // À ajouter dans la fonction TransportTarifSimulateur, après le calcul du résultat
+        const trancheSolidaire = engine.evaluate("tranche solidaire").nodeValue;
+        console.log("Tranche solidaire calculée:", trancheSolidaire);
         // Génération des explications
         const newExplanations = [];
         if (situation["type voyage"] === "'occasionnel'") {
           if (
-            situation["type ticket"] === "'10 voyages'" &&
+            situation["type ticket"] === "'10 voyage'" &&
             (situation["étudiant"] === "'oui'" ||
               situation["militaire"] === "'oui'" ||
               situation["famille nombreuse"] === "'oui'")
@@ -137,14 +168,14 @@ function TransportTarifSimulateur() {
               onChange={(e) => handleChange("type ticket", e.target.value)}
             >
               <option value="'1 voyage'">1 voyage</option>
-              <option value="'2 voyages'">2 voyages</option>
-              <option value="'10 voyages'">10 voyages</option>
+              <option value="'2 voyage'">2 voyages</option>
+              <option value="'10 voyage'">10 voyages</option>
             </select>
           </div>
         )}
 
         {situation["type voyage"] === "'occasionnel'" &&
-          situation["type ticket"] === "'10 voyages'" && (
+          situation["type ticket"] === "'10 voyage'" && (
             <div className="eligibility-section">
               <h3>Éligibilité au tarif réduit</h3>
 

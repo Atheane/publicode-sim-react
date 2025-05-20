@@ -31,7 +31,7 @@ tarif occasionnel:
       - si: type ticket = '10 voyage'
         alors: 
           variations:
-            - si: tarif réduit applicable
+            - si: tarif réduit
               alors: 8.40
             - sinon: 16.80
 
@@ -44,9 +44,16 @@ type ticket:
     - '2 voyage'
     - '10 voyage'
 
-tarif réduit applicable:
-  applicable si: type ticket = '10 voyage'
-  formule: étudiant = 'oui' ou famille nombreuse = 'oui' ou militaire = 'oui'
+tarif réduit:
+  applicable si:
+    toutes ces conditions:
+      - type voyage = 'occasionnel'
+      - type ticket = '10 voyage'
+  formule:
+    une de ces conditions:
+      - étudiant = 'oui'
+      - famille nombreuse = 'oui'
+      - militaire = 'oui'
   description: Les tarifs réduits s'appliquent aux étudiants, familles nombreuses et militaires
 
 étudiant:
@@ -79,6 +86,8 @@ tarif fréquent:
   applicable si: type voyage = 'fréquent'
   formule:
     variations:
+      - si: tranche solidaire = 'tranche 1'
+        alors: tarif solidaire 90
       - si: tranche solidaire = 'tranche 2'
         alors: tarif solidaire 50
       - si: tranche solidaire = 'tranche 3'
@@ -91,14 +100,23 @@ tarif standard:
     variations:
       - si: âge < 11
         alors: tarif pitchoun
-      - si: âge >= 11 et âge <= 27
+      - si: 
+          toutes ces conditions:
+            - âge >= 11
+            - âge <= 27
         alors: tarif jeune
-      - si: âge >= 28 et âge < 60
-        alors: 
-          variations:
-            - si: salarié = 'oui'
-              alors: tarif salarié 
-            - sinon: tarif classique
+      - si: 
+          toutes ces conditions:
+            - âge >= 28
+            - âge < 60
+            - salarié = 'oui'
+        alors: tarif salarié
+      - si:
+          toutes ces conditions:
+            - âge >= 28
+            - âge < 60
+            - salarié = 'non'
+        alors: tarif classique
       - si: âge >= 60
         alors: tarif senior
 
@@ -148,31 +166,29 @@ tarif salarié:
         alors: 426.00
 
 # Tarifs solidaires
+
+tarif solidaire 90:
+  applicable si: 
+    toutes ces conditions:
+      - type voyage = 'fréquent'
+      - tranche solidaire = 'tranche 1'
+  formule: tarif standard * 0.1  # Hypothèse: réduction de 90%
+
+
 tarif solidaire 50:
-  applicable si: type voyage = 'fréquent' et périodicité = 'mensuel'
-  formule:
-    variations:
-      - si: âge < 11
-        alors: 8.90
-      - si: âge >= 11 et âge <= 27
-        alors: 17.60
-      - si: âge >= 28 et âge < 60
-        alors: 26.40
-      - si: âge >= 60
-        alors: 20.10
+  applicable si:
+    toutes ces conditions:
+      - type voyage = 'fréquent'
+      - tranche solidaire = 'tranche 2'
+  formule: tarif standard * 0.5  # Réduction de 50%
+
 
 tarif solidaire 30:
-  applicable si: type voyage = 'fréquent' et périodicité = 'mensuel'
-  formule:
-    variations:
-      - si: âge < 11
-        alors: 12.50
-      - si: âge >= 11 et âge <= 27
-        alors: 24.60
-      - si: âge >= 28 et âge < 60
-        alors: 37.00
-      - si: âge >= 60
-        alors: 28.10
+  applicable si:
+    toutes ces conditions:
+      - type voyage = 'fréquent'
+      - tranche solidaire = 'tranche 3'
+  formule: tarif standard * 0.7  # Réduction de 30% (donc 70% du tarif standard)
 
 périodicité:
   question: Quelle est la périodicité de votre abonnement ?
@@ -195,10 +211,6 @@ quotient familial:
   question: Quel est votre quotient familial ?
   par défaut: 1200
   description: Montant fourni par la CAF ou calculé à partir de vos revenus
-  suggestions:
-    faible: 600
-    moyen: 900
-    élevé: 1500
 
 tranche solidaire:
   applicable si: type voyage = 'fréquent'
