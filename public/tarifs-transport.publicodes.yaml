@@ -77,7 +77,6 @@ militaire:
 carte combattant:
   question: Êtes-vous titulaire d'une carte du combattant ?
   par défaut: "'non'"
-  applicable si: type ticket = '10 voyages'
   suggestions:
     - "'oui'"
     - "'non'"
@@ -99,17 +98,21 @@ famille nombreuse:
     - "'oui'"
     - "'non'"
 
+# Règles de gratuité - définir cela comme un point d'entrée séparé
+gratuité:
+  formule:
+    une de ces conditions:
+      - situation handicap >= 50
+      - carte combattant = 'oui'
+      - quotient familial <= 555
+
 # Tarifs fréquents
 tarif fréquent:
   applicable si: type voyage = 'fréquent'
   formule:
     variations:
-      - si: situation handicap >= 50
-        alors: 0  # Gratuité pour handicap ≥ 50%
-      - si: carte combattant = 'oui'
-        alors: 0  # Gratuité pour titulaires de la carte du combattant
-      - si: tranche solidaire = 'tranche 1'
-        alors: 0  # Gratuité pour tranche 1
+      - si: gratuité
+        alors: 0  # Gratuité complète
       - si: tranche solidaire = 'tranche 2'
         alors: tarif solidaire 50
       - si: tranche solidaire = 'tranche 3'
