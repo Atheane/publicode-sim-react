@@ -67,7 +67,7 @@ function LilleTransportTarifSimulateur() {
 
   useEffect(() => {
     // Charge le fichier YAML depuis le dossier public
-    fetch(process.env.PUBLIC_URL + "/tarif-transport-lille.yaml")
+    fetch(process.env.PUBLIC_URL + "/lille.yaml")
       .then((response) => {
         if (!response.ok) throw new Error("Fichier YAML non trouvé");
         return response.text();

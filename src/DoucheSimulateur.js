@@ -13,7 +13,7 @@ function DoucheSimulateur() {
   });
 
   useEffect(() => {
-    fetch(process.env.PUBLIC_URL + "/CO2-douche.publicodes.yaml")
+    fetch(process.env.PUBLIC_URL + "/co2.yaml")
       .then((res) => res.text())
       .then((text) => {
         const rules = yaml.load(text);

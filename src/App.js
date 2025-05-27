@@ -1,20 +1,19 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./Home";
-import TarifSimulateurLille from "./TarifSimulateurLille";
-import TarifSimulateurBordeaux from "./TarifSimulateurBordeaux";
+import TarifSimulateurLille from "./Lille";
+import TarifSimulateurBordeaux from "./Bordeaux";
 import DoucheSimulateur from "./DoucheSimulateur";
-import TarifSimulateurRennes from "./TarifSimulateurRennes";
-import TarifSimulateurColmar from "./TarifSimulateurColmar";
+// import TarifSimulateurRennes from "./Rennes";
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/tarifs-lille" element={<TarifSimulateurLille />} />
-        <Route path="/tarifs-bordeaux" element={<TarifSimulateurBordeaux />} />
-        <Route path="/tarifs-rennes" element={<TarifSimulateurRennes />} />
-        <Route path="/tarifs-colmar" element={<TarifSimulateurColmar />} />
+        <Route path="/bordeaux" element={<TarifSimulateurBordeaux />} />
+        <Route path="/lille" element={<TarifSimulateurLille />} />
+        {/* <Route path="/rennes" element={<TarifSimulateurRennes />} /> */}
         <Route path="/co2-douche" element={<DoucheSimulateur />} />
       </Routes>
     </Router>

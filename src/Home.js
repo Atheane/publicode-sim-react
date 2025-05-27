@@ -26,7 +26,7 @@ function Home() {
         </Link>
 
         <Link
-          to="/tarifs-bordeaux"
+          to="/bordeaux"
           style={{
             padding: "20px",
             backgroundColor: "#f5f5f5",
@@ -44,25 +44,7 @@ function Home() {
           </p>
         </Link>
         <Link
-          to="/tarifs-bordeaux-v2"
-          style={{
-            padding: "20px",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "8px",
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >
-          <h2 style={{ margin: "0 0 10px 0" }}>
-            🎫 V2 Simulateur des tarifs de transport pour Bordeaux Métropole
-          </h2>
-          <p style={{ margin: 0, color: "#666" }}>
-            Calculez votre tarif de transport en fonction de votre profil et de
-            vos besoins.
-          </p>
-        </Link>
-        <Link
-          to="/tarifs-lille"
+          to="/lille"
           style={{
             padding: "20px",
             backgroundColor: "#f5f5f5",
@@ -79,8 +61,8 @@ function Home() {
             vos besoins.
           </p>
         </Link>
-        <Link
-          to="/tarifs-rennes"
+        {/* <Link
+          to="/rennes"
           style={{
             padding: "20px",
             backgroundColor: "#f5f5f5",
@@ -96,25 +78,7 @@ function Home() {
             Calculez votre tarif de transport en fonction de votre profil et de
             vos besoins.
           </p>
-        </Link>
-        <Link
-          to="/tarifs-colmar"
-          style={{
-            padding: "20px",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "8px",
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >
-          <h2 style={{ margin: "0 0 10px 0" }}>
-            🎫 Simulateur des tarifs de transport pour Colmar
-          </h2>
-          <p style={{ margin: 0, color: "#666" }}>
-            Calculez votre tarif de transport en fonction de votre profil et de
-            vos besoins.
-          </p>
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

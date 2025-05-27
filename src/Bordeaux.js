@@ -25,7 +25,7 @@ function TransportBordeauxSimulateur() {
   });
 
   useEffect(() => {
-    fetch(process.env.PUBLIC_URL + "/tarifs-transport-bordeaux.publicodes.yaml")
+    fetch(process.env.PUBLIC_URL + "/bordeaux.yaml")
       .then((response) => {
         if (!response.ok) throw new Error("Fichier YAML non trouvé");
         return response.text();
