@@ -4,6 +4,8 @@ import Home from "./Home";
 import TarifSimulateurLille from "./TarifSimulateurLille";
 import TarifSimulateurBordeaux from "./TarifSimulateurBordeaux";
 import DoucheSimulateur from "./DoucheSimulateur";
+import TarifSimulateurRennes from "./TarifSimulateurRennes";
+import TarifSimulateurColmar from "./TarifSimulateurColmar";
 function App() {
   return (
     <Router>
@@ -11,6 +13,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/tarifs-lille" element={<TarifSimulateurLille />} />
         <Route path="/tarifs-bordeaux" element={<TarifSimulateurBordeaux />} />
+        <Route path="/tarifs-rennes" element={<TarifSimulateurRennes />} />
+        <Route path="/tarifs-colmar" element={<TarifSimulateurColmar />} />
         <Route path="/co2-douche" element={<DoucheSimulateur />} />
       </Routes>
     </Router>

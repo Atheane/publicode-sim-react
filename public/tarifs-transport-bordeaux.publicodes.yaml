@@ -1,5 +1,5 @@
 tarif:
-  titre: Tarif de transport
+  titre: Tarif de transport Bordeaux Métropole
   description: Calcul du tarif de transport en fonction de votre situation
   icônes: 🚌 💳
   formule: 
@@ -98,7 +98,7 @@ famille nombreuse:
     - "'oui'"
     - "'non'"
 
-# Règles de gratuité - définir cela comme un point d'entrée séparé
+# Règles de gratuité
 gratuité:
   formule:
     une de ces conditions:
@@ -112,7 +112,7 @@ tarif fréquent:
   formule:
     variations:
       - si: gratuité
-        alors: 0  # Gratuité complète
+        alors: 0
       - si: tranche solidaire = 'tranche 2'
         alors: tarif solidaire 50
       - si: tranche solidaire = 'tranche 3'
@@ -124,7 +124,7 @@ tarif standard:
   formule:
     variations:
       - si: âge < 5
-        alors: 0  # Gratuit pour les moins de 5 ans
+        alors: 0
       - si: 
           toutes ces conditions:
             - âge >= 5
@@ -341,4 +341,4 @@ salarié entreprise partenaire:
   suggestions:
     - "'non'"
     - "'oui'"
-  description: Les salariés des entreprises partenaires TBM bénéficient d'un tarif préférentiel
+  description: Les salariés des entreprises partenaires TBM bénéficient d'un tarif préférentiel.

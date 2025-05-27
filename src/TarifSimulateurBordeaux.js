@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import Engine, { formatValue } from "publicodes";
 import yaml from "js-yaml";
 
-function TransportTarifSimulateurBordeaux() {
+function TransportBordeauxSimulateur() {
   const [engine, setEngine] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [explanations, setExplanations] = useState([]);
-  // Situation initiale
+
   const [situation, setSituation] = useState({
     "type voyage": "'occasionnel'",
     "type ticket": "'1 voyage'",
@@ -25,7 +25,6 @@ function TransportTarifSimulateurBordeaux() {
   });
 
   useEffect(() => {
-    // Charge le fichier YAML depuis le dossier public
     fetch(process.env.PUBLIC_URL + "/tarifs-transport-bordeaux.publicodes.yaml")
       .then((response) => {
         if (!response.ok) throw new Error("Fichier YAML non trouvé");
@@ -40,7 +39,7 @@ function TransportTarifSimulateurBordeaux() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(`Erreur lors du chargement ou parsing YAML: ${err.message}`);
+        setError(`Erreur lors du chargement: ${err.message}`);
         setLoading(false);
       });
   }, []);
@@ -55,12 +54,10 @@ function TransportTarifSimulateurBordeaux() {
         // Génération des explications
         const newExplanations = [];
 
-        // Vérifier les conditions de gratuité en premier
         const handicap = parseInt(situation["situation handicap"]);
         const isCombattant = situation["carte combattant"] === "'oui'";
         const qf = parseInt(situation["quotient familial"]);
 
-        // Déterminer le type de voyage et les explications associées
         if (situation["type voyage"] === "'occasionnel'") {
           if (
             situation["type ticket"] === "'10 voyages'" &&
@@ -75,52 +72,40 @@ function TransportTarifSimulateurBordeaux() {
             );
           }
         } else if (situation["type voyage"] === "'fréquent'") {
-          // Cas de gratuité - à traiter en premier, et si c'est le cas,
-          // ne pas ajouter d'autres explications de tarif standard
           if (handicap >= 50) {
             newExplanations.push(
-              "Vous bénéficiez de la gratuité en raison de votre situation de handicap (taux d'incapacité ≥ 50%)."
+              "Gratuité - Situation de handicap (taux ≥ 50%)"
             );
           } else if (isCombattant) {
-            newExplanations.push(
-              "Vous bénéficiez de la gratuité en tant que titulaire de la carte du combattant."
-            );
+            newExplanations.push("Gratuité - Titulaire carte du combattant");
           } else if (qf <= 555) {
             newExplanations.push(
-              "Vous êtes éligible à la gratuité (tarif solidaire tranche 1)."
+              "Gratuité - Tarif solidaire tranche 1 (QF ≤ 555€)"
             );
           } else {
-            // Si pas de gratuité, ajouter les explications de réduction et de catégorie
             if (qf <= 775) {
-              newExplanations.push(
-                "Vous êtes éligible au tarif solidaire (tranche 2, réduction de 50%)."
-              );
+              newExplanations.push("Tarif solidaire tranche 2 (réduction 50%)");
             } else if (qf <= 970) {
-              newExplanations.push(
-                "Vous êtes éligible au tarif solidaire (tranche 3, réduction de 30%)."
-              );
+              newExplanations.push("Tarif solidaire tranche 3 (réduction 30%)");
             }
 
-            // Ajouter l'explication sur la catégorie d'âge seulement si pas de gratuité
             const age = parseInt(situation["âge"]);
             if (age < 5) {
-              newExplanations.push(
-                "Transport gratuit pour les moins de 5 ans."
-              );
+              newExplanations.push("Gratuit pour les moins de 5 ans");
             } else if (age <= 10) {
-              newExplanations.push("Tarif Pitchoun appliqué (5-10 ans).");
+              newExplanations.push("Tarif Pitchoun (5-10 ans)");
             } else if (age <= 27) {
-              newExplanations.push("Tarif Jeune appliqué (11-27 ans).");
+              newExplanations.push("Tarif Jeune (11-27 ans)");
             } else if (age >= 60) {
-              newExplanations.push("Tarif Senior appliqué (60 ans et plus).");
+              newExplanations.push("Tarif Senior (60 ans et plus)");
             } else if (situation["salarié entreprise partenaire"] === "'oui'") {
-              newExplanations.push("Tarif Salarié appliqué.");
+              newExplanations.push("Tarif Salarié entreprise partenaire");
             } else {
-              newExplanations.push("Tarif Classique appliqué (28-59 ans).");
+              newExplanations.push("Tarif Classique (28-59 ans)");
             }
           }
         } else if (situation["type voyage"] === "'scolaire'") {
-          newExplanations.push("Les transports scolaires sont gratuits.");
+          newExplanations.push("Les transports scolaires sont gratuits");
         }
 
         setExplanations(newExplanations);
@@ -139,24 +124,42 @@ function TransportTarifSimulateurBordeaux() {
   };
 
   if (loading) return <div>Chargement du simulateur...</div>;
-  if (error) return <div className="error">Erreur: {error}</div>;
+  if (error) return <div style={{ color: "red" }}>Erreur: {error}</div>;
 
   return (
-    <div
-      className="simulator-container"
-      style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}
-    >
-      <h1>Simulateur de tarifs de transport</h1>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+      <h1>🚌 Simulateur Tarifs Transport Bordeaux Métropole</h1>
       <p>Calculez votre tarif en fonction de votre situation</p>
 
-      <div className="form-section">
-        <h2>Votre voyage</h2>
+      <div
+        style={{
+          marginBottom: "20px",
+          padding: "20px",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "8px",
+        }}
+      >
+        <h2>Type de voyage</h2>
 
-        <div className="form-group">
-          <label>Type de voyage</label>
+        <div style={{ marginBottom: "15px" }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "5px",
+              fontWeight: "bold",
+            }}
+          >
+            Type de voyage :
+          </label>
           <select
             value={situation["type voyage"]}
             onChange={(e) => handleChange("type voyage", e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
           >
             <option value="'occasionnel'">Occasionnel</option>
             <option value="'fréquent'">Fréquent (abonnement)</option>
@@ -165,11 +168,25 @@ function TransportTarifSimulateurBordeaux() {
         </div>
 
         {situation["type voyage"] === "'occasionnel'" && (
-          <div className="form-group">
-            <label>Type de ticket</label>
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
+              Type de ticket :
+            </label>
             <select
               value={situation["type ticket"]}
               onChange={(e) => handleChange("type ticket", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
             >
               <option value="'1 voyage'">1 voyage</option>
               <option value="'2 voyages'">2 voyages</option>
@@ -178,204 +195,225 @@ function TransportTarifSimulateurBordeaux() {
           </div>
         )}
 
-        {situation["type voyage"] === "'occasionnel'" &&
-          situation["type ticket"] === "'10 voyages'" && (
-            <div className="eligibility-section">
-              <h3>Éligibilité au tarif réduit</h3>
-
-              <div className="form-group">
-                <label>Étudiant ?</label>
-                <select
-                  value={situation["étudiant"]}
-                  onChange={(e) => handleChange("étudiant", e.target.value)}
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Militaire ?</label>
-                <select
-                  value={situation["militaire"]}
-                  onChange={(e) => handleChange("militaire", e.target.value)}
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Titulaire de la carte du combattant ?</label>
-                <select
-                  value={situation["carte combattant"]}
-                  onChange={(e) =>
-                    handleChange("carte combattant", e.target.value)
-                  }
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>En service civique ?</label>
-                <select
-                  value={situation["service civique"]}
-                  onChange={(e) =>
-                    handleChange("service civique", e.target.value)
-                  }
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Famille nombreuse ?</label>
-                <select
-                  value={situation["famille nombreuse"]}
-                  onChange={(e) =>
-                    handleChange("famille nombreuse", e.target.value)
-                  }
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-                <small>
-                  3 enfants de moins de 18 ans dans le foyer, carte SNCF Famille
-                  Nombreuse, ou 5 enfants dans le foyer
-                </small>
-              </div>
-            </div>
-          )}
-
         {situation["type voyage"] === "'fréquent'" && (
-          <>
-            <div className="form-group">
-              <label>Périodicité</label>
-              <select
-                value={situation["périodicité"]}
-                onChange={(e) => handleChange("périodicité", e.target.value)}
-              >
-                <option value="'mensuel'">Mensuel</option>
-                <option value="'annuel'">Annuel</option>
-              </select>
-            </div>
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
+              Périodicité :
+            </label>
+            <select
+              value={situation["périodicité"]}
+              onChange={(e) => handleChange("périodicité", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            >
+              <option value="'mensuel'">Mensuel</option>
+              <option value="'annuel'">Annuel</option>
+            </select>
+          </div>
+        )}
+      </div>
 
-            <h3>Informations personnelles</h3>
+      {situation["type voyage"] === "'occasionnel'" &&
+        situation["type ticket"] === "'10 voyages'" && (
+          <div
+            style={{
+              marginBottom: "20px",
+              padding: "20px",
+              backgroundColor: "#e3f2fd",
+              borderRadius: "8px",
+            }}
+          >
+            <h2>Éligibilité au tarif réduit</h2>
 
-            <div className="form-group">
-              <label>Âge</label>
-              <input
-                type="number"
-                value={situation["âge"]}
-                onChange={(e) => handleChange("âge", parseInt(e.target.value))}
-                min="0"
-                max="120"
-              />
-              <small>
-                Différents tarifs s'appliquent selon votre tranche d'âge: moins
-                de 5 ans (gratuit), 5-10 ans (Pitchoun), 11-27 ans (Jeune),
-                28-59 ans (Classique/Salarié), 60 ans et plus (Senior)
-              </small>
-            </div>
-
-            <div className="form-group">
-              <label>Quotient familial (€)</label>
-              <input
-                type="number"
-                value={situation["quotient familial"]}
-                onChange={(e) =>
-                  handleChange("quotient familial", parseInt(e.target.value))
-                }
-                min="0"
-              />
-              <small>
-                Montant fourni par la CAF ou calculé à partir de vos revenus. QF
-                ≤ 555€: gratuité / QF 556-775€: -50% / QF 776-970€: -30%
-              </small>
-            </div>
-
-            <div className="form-group">
-              <label>Taux d'incapacité (handicap)</label>
-              <input
-                type="number"
-                value={situation["situation handicap"]}
-                onChange={(e) =>
-                  handleChange("situation handicap", parseInt(e.target.value))
-                }
-                min="0"
-                max="100"
-              />
-              <small>
-                Entrez 0 si vous n'êtes pas en situation de handicap. Les
-                personnes avec un taux ≥ 50% bénéficient de la gratuité.
-              </small>
-            </div>
-
-            <div className="form-group">
-              <label>Titulaire de la carte du combattant ?</label>
-              <select
-                value={situation["carte combattant"]}
-                onChange={(e) =>
-                  handleChange("carte combattant", e.target.value)
-                }
-              >
-                <option value="'non'">Non</option>
-                <option value="'oui'">Oui</option>
-              </select>
-              <small>
-                Les titulaires de la carte du combattant bénéficient de la
-                gratuité des transports.
-              </small>
-            </div>
-
-            {situation["âge"] >= 28 && situation["âge"] < 60 && (
-              <div className="form-group">
-                <label>
-                  Êtes-vous salarié d'une entreprise partenaire TBM ?
+            {[
+              "étudiant",
+              "militaire",
+              "famille nombreuse",
+              "service civique",
+            ].map((field) => (
+              <div key={field} style={{ marginBottom: "15px" }}>
+                <label style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={situation[field] === "'oui'"}
+                    onChange={(e) =>
+                      handleChange(field, e.target.checked ? "'oui'" : "'non'")
+                    }
+                    style={{ marginRight: "10px" }}
+                  />
+                  {field === "étudiant" && "Étudiant"}
+                  {field === "militaire" && "Militaire"}
+                  {field === "famille nombreuse" && "Famille nombreuse"}
+                  {field === "service civique" && "En service civique"}
                 </label>
-                <select
-                  value={situation["salarié entreprise partenaire"]}
+              </div>
+            ))}
+          </div>
+        )}
+
+      {situation["type voyage"] === "'fréquent'" && (
+        <div
+          style={{
+            marginBottom: "20px",
+            padding: "20px",
+            backgroundColor: "#fff3e0",
+            borderRadius: "8px",
+          }}
+        >
+          <h2>Informations personnelles</h2>
+
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
+              Âge :
+            </label>
+            <input
+              type="number"
+              value={situation["âge"]}
+              onChange={(e) => handleChange("âge", parseInt(e.target.value))}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              min="0"
+              max="120"
+            />
+          </div>
+
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
+              Quotient familial (€) :
+            </label>
+            <input
+              type="number"
+              value={situation["quotient familial"]}
+              onChange={(e) =>
+                handleChange("quotient familial", parseInt(e.target.value))
+              }
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              min="0"
+            />
+            <small style={{ color: "#666" }}>
+              ≤ 555€: gratuit | 556-775€: -50% | 776-970€: -30%
+            </small>
+          </div>
+
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
+              Taux d'incapacité (%) :
+            </label>
+            <input
+              type="number"
+              value={situation["situation handicap"]}
+              onChange={(e) =>
+                handleChange("situation handicap", parseInt(e.target.value))
+              }
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              min="0"
+              max="100"
+            />
+            <small style={{ color: "#666" }}>≥ 50% = gratuit</small>
+          </div>
+
+          {situation["âge"] >= 28 && situation["âge"] < 60 && (
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "flex", alignItems: "center" }}>
+                <input
+                  type="checkbox"
+                  checked={
+                    situation["salarié entreprise partenaire"] === "'oui'"
+                  }
                   onChange={(e) =>
                     handleChange(
                       "salarié entreprise partenaire",
-                      e.target.value
+                      e.target.checked ? "'oui'" : "'non'"
                     )
                   }
-                >
-                  <option value="'non'">Non</option>
-                  <option value="'oui'">Oui</option>
-                </select>
-                <small>
-                  Les salariés des entreprises partenaires TBM bénéficient d'un
-                  tarif préférentiel.
-                </small>
-              </div>
-            )}
-          </>
-        )}
+                  style={{ marginRight: "10px" }}
+                />
+                Salarié d'une entreprise partenaire TBM
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ marginBottom: "15px" }}>
+        <label style={{ display: "flex", alignItems: "center" }}>
+          <input
+            type="checkbox"
+            checked={situation["carte combattant"] === "'oui'"}
+            onChange={(e) =>
+              handleChange(
+                "carte combattant",
+                e.target.checked ? "'oui'" : "'non'"
+              )
+            }
+            style={{ marginRight: "10px" }}
+          />
+          Titulaire de la carte du combattant
+        </label>
       </div>
 
       {result && (
         <div
-          className="result-section"
           style={{
-            marginTop: "30px",
-            padding: "20px",
-            backgroundColor: "#f5f7fa",
+            padding: "30px",
+            backgroundColor: result.nodeValue === 0 ? "#e8f5e8" : "#f5f5f5",
             borderRadius: "8px",
+            marginTop: "20px",
+            border:
+              result.nodeValue === 0 ? "2px solid #4caf50" : "1px solid #ddd",
           }}
         >
-          <h2>Votre tarif</h2>
+          <h2 style={{ color: result.nodeValue === 0 ? "#2e7d32" : "#333" }}>
+            {result.nodeValue === 0 ? "🎉 Transport GRATUIT !" : "💰 Tarif"}
+          </h2>
+
           <div
-            className="tarif"
             style={{
-              fontSize: "24px",
+              fontSize: "1.5em",
               fontWeight: "bold",
-              color: "#2c3e50",
-              margin: "15px 0",
+              marginBottom: "10px",
             }}
           >
             {result.nodeValue === 0 ? (
@@ -395,47 +433,12 @@ function TransportTarifSimulateurBordeaux() {
           </div>
 
           {explanations.length > 0 && (
-            <div className="explanations">
-              <h3>Détails</h3>
-              <ul style={{ listStyleType: "none", padding: "0" }}>
+            <div style={{ marginTop: "15px" }}>
+              <strong>Détails :</strong>
+              <ul style={{ margin: "5px 0", paddingLeft: "20px" }}>
                 {explanations.map((explanation, index) => (
-                  <li
-                    key={index}
-                    style={{
-                      padding: "6px 0",
-                      borderBottom:
-                        index < explanations.length - 1
-                          ? "1px solid #e0e0e0"
-                          : "none",
-                    }}
-                  >
-                    {explanation}
-                  </li>
+                  <li key={index}>{explanation}</li>
                 ))}
-              </ul>
-            </div>
-          )}
-
-          {situation["type voyage"] === "'fréquent'" && (
-            <div
-              className="additional-info"
-              style={{ marginTop: "20px", fontSize: "14px" }}
-            >
-              <p>
-                <strong>Avantages inclus :</strong>
-              </p>
-              <ul>
-                <li>Validations illimitées pendant la période d'abonnement</li>
-                <li>Sur carte nominative TBM</li>
-                <li>
-                  Accès au programme de fidélité TBM fid' (inscription
-                  obligatoire)
-                </li>
-                <li>
-                  Valable sur tous les modes de transport de Bordeaux Métropole
-                  : Tramway, Bus, Bato et Cars régionaux (dans la limite des 28
-                  communes de Bordeaux Métropole)
-                </li>
               </ul>
             </div>
           )}
@@ -445,4 +448,4 @@ function TransportTarifSimulateurBordeaux() {
   );
 }
 
-export default TransportTarifSimulateurBordeaux;
+export default TransportBordeauxSimulateur;

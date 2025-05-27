@@ -44,6 +44,24 @@ function Home() {
           </p>
         </Link>
         <Link
+          to="/tarifs-bordeaux-v2"
+          style={{
+            padding: "20px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <h2 style={{ margin: "0 0 10px 0" }}>
+            🎫 V2 Simulateur des tarifs de transport pour Bordeaux Métropole
+          </h2>
+          <p style={{ margin: 0, color: "#666" }}>
+            Calculez votre tarif de transport en fonction de votre profil et de
+            vos besoins.
+          </p>
+        </Link>
+        <Link
           to="/tarifs-lille"
           style={{
             padding: "20px",
@@ -55,6 +73,42 @@ function Home() {
         >
           <h2 style={{ margin: "0 0 10px 0" }}>
             🎫 Simulateur des tarifs de transport pour Lille Métropole
+          </h2>
+          <p style={{ margin: 0, color: "#666" }}>
+            Calculez votre tarif de transport en fonction de votre profil et de
+            vos besoins.
+          </p>
+        </Link>
+        <Link
+          to="/tarifs-rennes"
+          style={{
+            padding: "20px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <h2 style={{ margin: "0 0 10px 0" }}>
+            🎫 Simulateur des tarifs de transport pour Rennes Métropole
+          </h2>
+          <p style={{ margin: 0, color: "#666" }}>
+            Calculez votre tarif de transport en fonction de votre profil et de
+            vos besoins.
+          </p>
+        </Link>
+        <Link
+          to="/tarifs-colmar"
+          style={{
+            padding: "20px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "8px",
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <h2 style={{ margin: "0 0 10px 0" }}>
+            🎫 Simulateur des tarifs de transport pour Colmar
           </h2>
           <p style={{ margin: 0, color: "#666" }}>
             Calculez votre tarif de transport en fonction de votre profil et de
