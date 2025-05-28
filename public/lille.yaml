@@ -1,147 +1,279 @@
 tarif:
-  titre: Tarif de transport Lille Métropole
-  description: Calcul du tarif de transport en fonction de votre situation dans la métropole de Lille
-  icônes: 🚌 💳
+  titre: Tarif de transport Métropole Européenne de Lille
+  description: Calcul du tarif de transport en fonction de votre situation
+  icônes: 🚌 🚇 💳
   formule: 
     variations:
-      - si: type voyage = 'unitaire'
-        alors: tarif unitaire
-      - si: type voyage = 'pass'
-        alors: tarif pass
-      - si: type voyage = 'abonnement'
+      - si: type transport = 'occasionnel'
+        alors: tarif occasionnel
+      - si: type transport = 'abonnement'
         alors: tarif abonnement
 
-type voyage:
-  question: Quel type de titre souhaitez-vous ?
-  par défaut: "'unitaire'"
+type transport:
+  question: Quel type de transport souhaitez-vous ?
+  par défaut: "'occasionnel'"
   suggestions:
-    - "'unitaire'"
-    - "'pass'"
+    - "'occasionnel'"
     - "'abonnement'"
 
-# Tarifs unitaires
-tarif unitaire:
-  applicable si: type voyage = 'unitaire'
+# Tarifs occasionnels
+tarif occasionnel:
+  applicable si: type transport = 'occasionnel'
   formule:
     variations:
-      - si: type unitaire = 'simple'
+      - si: type billet = 'unitaire'
         alors: 1.80
-      - si: type unitaire = 'carnet 10'
+      - si: type billet = 'unitaire x10'
         alors: 15.60
-      - si: type unitaire = 'rsa'
-        alors: 7.90
-      - si: type unitaire = 'handipole'
+      - si: type billet = 'zap'
+        alors: 1.15
+      - si: type billet = 'mwr sans correspondance'
+        alors: 2.25
+      - si: type billet = 'mwr avec correspondance'
+        alors: 2.45
+      - si: type billet = 'integre'
+        alors: 2.30
+      - si: type billet = 'mwr x10 sans correspondance'
+        alors: 18.20
+      - si: type billet = 'mwr x10 avec correspondance'
+        alors: 20.20
+      - si: type billet = 'handipole'
         alors: 3.10
-
-type unitaire:
-  applicable si: type voyage = 'unitaire'
-  formule:
-    variations:
-      - si: bénéficiaire rsa = 'oui'
-        alors: "'rsa'"
-      - si: handipole = 'oui'
-        alors: "'handipole'"
-      - sinon: type unitaire standard
-
-type unitaire standard:
-  question: Quel type de titre unitaire souhaitez-vous ?
-  par défaut: "'simple'"
-  suggestions:
-    - "'simple'"
-    - "'carnet 10'"
-
-bénéficiaire rsa:
-  question: Êtes-vous bénéficiaire du RSA socle non majoré pour situation d'isolement ?
-  par défaut: "'non'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
-  applicable si: type voyage = 'unitaire'
-
-handipole:
-  question: Utilisez-vous le service Handipole ?
-  par défaut: "'non'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
-  applicable si: type voyage = 'unitaire'
-
-# Tarifs pass
-tarif pass:
-  applicable si: type voyage = 'pass'
-  formule:
-    variations:
-      - si: type pass = 'soirée'
+      - si: type billet = 'rsa x10'
+        alors: 7.90
+      - si: type billet = 'pass soiree'
         alors: 2.50
-      - si: type pass = '1 jour'
+      - si: type billet = 'pass 1 jour'
         alors: 5.40
-      - si: type pass = '2 jours'
+      - si: type billet = 'pass 2 jours'
         alors: 9.80
-      - si: type pass = '3 jours'
+      - si: type billet = 'pass 3 jours'
         alors: 13.00
-      - si: type pass = '4 jours'
+      - si: type billet = 'pass 4 jours'
         alors: 15.10
-      - si: type pass = '5 jours'
+      - si: type billet = 'pass 5 jours'
         alors: 16.80
-      - si: type pass = '6 jours'
+      - si: type billet = 'pass 6 jours'
         alors: 17.90
-      - si: type pass = '7 jours'
+      - si: type billet = 'pass 7 jours'
         alors: 18.40
+      - si: type billet = 'semaine mwr'
+        alors: 13.00
+      - si: type billet = 'semaine integree'
+        alors: 21.00
+      - si: type billet = 'hebdo ter'
+        alors: 10.70
+      - sinon: 1.80
 
-type pass:
-  question: Quel type de pass souhaitez-vous ?
-  par défaut: "'1 jour'"
-  applicable si: type voyage = 'pass'
+type billet:
+  question: Quel type de billet souhaitez-vous ?
+  par défaut: "'unitaire'"
+  applicable si: type transport = 'occasionnel'
   suggestions:
-    - "'soirée'"
-    - "'1 jour'"
-    - "'2 jours'"
-    - "'3 jours'"
-    - "'4 jours'"
-    - "'5 jours'"
-    - "'6 jours'"
-    - "'7 jours'"
+    - "'unitaire'"
+    - "'unitaire x10'"
+    - "'zap'"
+    - "'mwr sans correspondance'"
+    - "'mwr avec correspondance'"
+    - "'integre'"
+    - "'mwr x10 sans correspondance'"
+    - "'mwr x10 avec correspondance'"
+    - "'handipole'"
+    - "'rsa x10'"
+    - "'pass soiree'"
+    - "'pass 1 jour'"
+    - "'pass 2 jours'"
+    - "'pass 3 jours'"
+    - "'pass 4 jours'"
+    - "'pass 5 jours'"
+    - "'pass 6 jours'"
+    - "'pass 7 jours'"
+    - "'semaine mwr'"
+    - "'semaine integree'"
+    - "'hebdo ter'"
 
 # Tarifs abonnements
 tarif abonnement:
-  applicable si: type voyage = 'abonnement'
+  applicable si: type transport = 'abonnement'
   formule:
     variations:
-      - si: mineur mel
+      - si: âge < 18
         alors: 0
-      - si: éligible tarif coquelicot = 'oui'
-        alors: 7.90
-      - si: éligible tarif iris = 'oui'
-        alors: 7.90
+      - si: 
+          une de ces conditions:
+            - coquelicot = oui
+            - iris = oui
+            - css = oui
+            - qf0 = oui
+        alors: tarif spécial
       - si: 
           toutes ces conditions:
-            - âge >= 4
-            - âge <= 25
-            - quotient familial <= 374
-            - habitant mel = 'oui'
-        alors: tarif jeune qf1
-      - si:
-          toutes ces conditions:
-            - âge >= 4
-            - âge <= 25
-            - quotient familial > 374
-            - quotient familial <= 537
-            - habitant mel = 'oui'
-        alors: tarif jeune qf2
-      - si:
-          toutes ces conditions:
-            - âge >= 4
-            - âge <= 25
-            - quotient familial > 537
             - quotient familial <= 716
-            - habitant mel = 'oui'
-        alors: tarif jeune qf3
+            - âge >= 18
+            - coquelicot = non
+            - iris = non
+            - css = non
+            - qf0 = non
+        alors: tarif réduit
+      - si: type abonnement = 'vlille reduit'
+        alors: 27.00
+      - si: type abonnement = 'vlille standard'
+        alors: 40.50
+      - si: type abonnement = 'abo ter mensuel'
+        alors: 63.00
+      - si: type abonnement = 'abo ter permanent'
+        alors: 55.00
+      - sinon: tarif standard
+
+# Tarifs spéciaux
+tarif spécial:
+  applicable si: 
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - une de ces conditions:
+          - coquelicot = oui
+          - iris = oui
+          - css = oui
+          - qf0 = oui
+  formule:
+    variations:
+      - si: coquelicot = oui
+        alors: 7.90
+      - si: iris = oui
+        alors: 7.90
+      - si: css = oui
+        alors: tarif css
+      - si: qf0 = oui
+        alors: 7.90
+      - sinon: 7.90
+
+tarif css:
+  applicable si:
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - css = oui
+  formule:
+    variations:
       - si:
           toutes ces conditions:
             - âge >= 4
             - âge <= 25
-            - css ou ame = 'oui'
-        alors: tarif jeune css
+        alors: 15.75
+      - si:
+          toutes ces conditions:
+            - âge >= 26
+            - âge <= 64
+        alors: 31.50
+      - si: âge >= 65
+        alors: 15.75
+      - sinon: 31.50
+
+# Tranches de quotient familial
+tranche qf:
+  applicable si:
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - quotient familial <= 716
+      - âge >= 18
+      - coquelicot = non
+      - iris = non
+      - css = non
+      - qf0 = non
+  formule:
+    variations:
+      - si: quotient familial < 374
+        alors: "'qf1'"
+      - si:
+          toutes ces conditions:
+            - quotient familial >= 375
+            - quotient familial <= 537
+        alors: "'qf2'"
+      - si:
+          toutes ces conditions:
+            - quotient familial >= 538
+            - quotient familial <= 716
+        alors: "'qf3'"
+      - sinon: "'qf3'"
+
+# Tarifs réduits selon QF
+tarif réduit:
+  applicable si:
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - quotient familial <= 716
+      - âge >= 18
+      - coquelicot = non
+      - iris = non
+      - css = non
+      - qf0 = non
+  formule:
+    variations:
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - tranche qf = "'qf1'"
+        alors: tarif qf1 jeune
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - tranche qf = "'qf2'"
+        alors: tarif qf2 jeune
+      - si:
+          toutes ces conditions:
+            - âge >= 4
+            - âge <= 25
+            - tranche qf = "'qf3'"
+        alors: tarif qf3 jeune
+      - si:
+          toutes ces conditions:
+            - âge >= 26
+            - âge <= 64
+            - tranche qf = "'qf1'"
+        alors: tarif qf1 adulte
+      - si:
+          toutes ces conditions:
+            - âge >= 26
+            - âge <= 64
+            - tranche qf = "'qf2'"
+        alors: tarif qf2 adulte
+      - si:
+          toutes ces conditions:
+            - âge >= 26
+            - âge <= 64
+            - tranche qf = "'qf3'"
+        alors: tarif qf3 adulte
+      - si:
+          toutes ces conditions:
+            - âge >= 65
+            - tranche qf = "'qf1'"
+        alors: tarif qf1 senior
+      - si:
+          toutes ces conditions:
+            - âge >= 65
+            - tranche qf = "'qf2'"
+        alors: tarif qf2 senior
+      - si:
+          toutes ces conditions:
+            - âge >= 65
+            - tranche qf = "'qf3'"
+        alors: tarif qf3 senior
+      - sinon: tarif qf3 adulte
+
+# Tarifs standards par âge
+tarif standard:
+  applicable si:
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - quotient familial > 716
+      - coquelicot = non
+      - iris = non
+      - css = non
+      - qf0 = non
+      - âge >= 18
+  formule:
+    variations:
       - si:
           toutes ces conditions:
             - âge >= 4
@@ -151,292 +283,189 @@ tarif abonnement:
           toutes ces conditions:
             - âge >= 26
             - âge <= 64
-            - quotient familial <= 374
-            - habitant mel = 'oui'
-        alors: tarif adulte qf1
-      - si:
-          toutes ces conditions:
-            - âge >= 26
-            - âge <= 64
-            - quotient familial > 374
-            - quotient familial <= 537
-            - habitant mel = 'oui'
-        alors: tarif adulte qf2
-      - si:
-          toutes ces conditions:
-            - âge >= 26
-            - âge <= 64
-            - quotient familial > 537
-            - quotient familial <= 716
-            - habitant mel = 'oui'
-        alors: tarif adulte qf3
-      - si:
-          toutes ces conditions:
-            - âge >= 26
-            - âge <= 64
-            - css ou ame = 'oui'
-        alors: tarif adulte css
-      - si:
-          toutes ces conditions:
-            - âge >= 26
-            - âge <= 64
-        alors: tarif tout public
-      - si:
-          toutes ces conditions:
-            - âge >= 65
-            - quotient familial <= 374
-            - habitant mel = 'oui'
-        alors: tarif senior qf1
-      - si:
-          toutes ces conditions:
-            - âge >= 65
-            - quotient familial > 374
-            - quotient familial <= 537
-            - habitant mel = 'oui'
-        alors: tarif senior qf2
-      - si:
-          toutes ces conditions:
-            - âge >= 65
-            - quotient familial > 537
-            - quotient familial <= 716
-            - habitant mel = 'oui'
-        alors: tarif senior qf3
-      - si:
-          toutes ces conditions:
-            - âge >= 65
-            - css ou ame = 'oui'
-        alors: tarif senior css
-      - si:
-          toutes ces conditions:
-            - âge >= 65
-            - quotient familial = 0
-        alors: tarif senior qf0
-      - si:
-          toutes ces conditions:
-            - âge >= 65
+        alors: tarif adulte standard
+      - si: âge >= 65
         alors: tarif senior standard
+      - sinon: tarif adulte standard
 
-mineur mel:
-  applicable si: type voyage = 'abonnement'
-  formule: 
-    toutes ces conditions:
-      - âge < 18
-      - habitant mel = 'oui'
-
-éligible tarif coquelicot:
-  question: Êtes-vous non ou mal voyant, titulaire de la carte mobilité inclusion ou d'invalidité portant la mention cécité ?
-  par défaut: "'non'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
-  applicable si: type voyage = 'abonnement'
-
-éligible tarif iris:
-  question: Êtes-vous demandeur d'emploi bénéficiant d'un accompagnement renforcé Pôle Emploi ou Mission Locale ?
-  par défaut: "'non'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
-  applicable si: type voyage = 'abonnement'
-
-tarif jeune qf1:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 3.40
-      - si: type abonnement = '10 mois'
-        alors: 3.40
-      - si: type abonnement = 'mensuel'
-        alors: 3.95
-
-tarif jeune qf2:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 8.05
-      - si: type abonnement = '10 mois'
-        alors: 8.05
-      - si: type abonnement = 'mensuel'
-        alors: 9.50
-
-tarif jeune qf3:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 13.50
-      - si: type abonnement = '10 mois'
-        alors: 13.50
-      - si: type abonnement = 'mensuel'
-        alors: 15.75
-
-tarif jeune css:
-  applicable si: type voyage = 'abonnement'
-  formule: 15.75
-
+# Définition des tarifs par catégorie et périodicité
 tarif jeune standard:
-  applicable si: type voyage = 'abonnement'
   formule:
     variations:
-      - si: type abonnement = 'permanent'
+      - si: périodicité = 'permanent'
         alors: 27.00
-      - si: type abonnement = '10 mois'
+      - si: périodicité = 'mensuel'
+        alors: 31.50
+      - si: périodicité = '10 mois'
         alors: 27.00
-      - si: type abonnement = 'mensuel'
-        alors: 31.50
+      - sinon: 31.50
 
-tarif adulte qf1:
-  applicable si: type voyage = 'abonnement'
+tarif adulte standard:
   formule:
     variations:
-      - si: type abonnement = 'permanent'
-        alors: 6.70
-      - si: type abonnement = 'mensuel'
-        alors: 7.90
-
-tarif adulte qf2:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 16.10
-      - si: type abonnement = 'mensuel'
-        alors: 19.00
-
-tarif adulte qf3:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 27.50
-      - si: type abonnement = 'mensuel'
-        alors: 31.50
-
-tarif adulte css:
-  applicable si: type voyage = 'abonnement'
-  formule: 31.50
-
-tarif senior qf0:
-  applicable si: type voyage = 'abonnement'
-  formule: 7.90
-
-tarif senior qf1:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 3.40
-      - si: type abonnement = 'mensuel'
-        alors: 3.95
-
-tarif senior qf2:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 8.05
-      - si: type abonnement = 'mensuel'
-        alors: 9.50
-
-tarif senior qf3:
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: type abonnement = 'permanent'
-        alors: 13.50
-      - si: type abonnement = 'mensuel'
-        alors: 15.75
-
-tarif senior css:
-  applicable si: type voyage = 'abonnement'
-  formule: 15.75
+      - si: périodicité = 'permanent'
+        alors: 55.00
+      - si: périodicité = 'mensuel'
+        alors: 63.00
+      - sinon: 63.00
 
 tarif senior standard:
-  applicable si: type voyage = 'abonnement'
   formule:
     variations:
-      - si: type abonnement = 'permanent'
+      - si: périodicité = 'permanent'
         alors: 27.00
-      - si: type abonnement = 'mensuel'
+      - si: périodicité = 'mensuel'
         alors: 31.50
+      - sinon: 31.50
 
-tarif tout public:
-  applicable si: type voyage = 'abonnement'
+# Tarifs QF1
+tarif qf1 jeune:
   formule:
     variations:
-      - si: type abonnement = 'permanent'
-        alors: 55.00
-      - si: type abonnement = 'mensuel'
-        alors: 63.00
+      - si: périodicité = 'permanent'
+        alors: 3.40
+      - si: périodicité = '10 mois'
+        alors: 3.40
+      - si: périodicité = 'mensuel'
+        alors: 3.95
+      - sinon: 3.95
 
+tarif qf1 adulte:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 6.70
+      - si: périodicité = 'mensuel'
+        alors: 7.90
+      - sinon: 7.90
+
+tarif qf1 senior:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 3.40
+      - si: périodicité = 'mensuel'
+        alors: 3.95
+      - sinon: 3.95
+
+# Tarifs QF2
+tarif qf2 jeune:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 8.05
+      - si: périodicité = '10 mois'
+        alors: 8.05
+      - si: périodicité = 'mensuel'
+        alors: 9.50
+      - sinon: 9.50
+
+tarif qf2 adulte:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 16.10
+      - si: périodicité = 'mensuel'
+        alors: 19.00
+      - sinon: 19.00
+
+tarif qf2 senior:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 8.05
+      - si: périodicité = 'mensuel'
+        alors: 9.50
+      - sinon: 9.50
+
+# Tarifs QF3
+tarif qf3 jeune:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 13.50
+      - si: périodicité = '10 mois'
+        alors: 13.50
+      - si: périodicité = 'mensuel'
+        alors: 15.75
+      - sinon: 15.75
+
+tarif qf3 adulte:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 27.50
+      - si: périodicité = 'mensuel'
+        alors: 31.50
+      - sinon: 31.50
+
+tarif qf3 senior:
+  formule:
+    variations:
+      - si: périodicité = 'permanent'
+        alors: 13.50
+      - si: périodicité = 'mensuel'
+        alors: 15.75
+      - sinon: 15.75
+
+# Variables
 type abonnement:
   question: Quel type d'abonnement souhaitez-vous ?
-  par défaut: "'mensuel'"
-  applicable si: type voyage = 'abonnement'
-  formule:
-    variations:
-      - si: 
-          toutes ces conditions:
-            - âge >= 4
-            - âge <= 25
-            - habitant mel = 'oui'
-        alors: type abonnement jeune mel
-      - si: 
-          toutes ces conditions:
-            - âge >= 4
-            - âge <= 25
-        alors: type abonnement jeune
-      - sinon: type abonnement adulte
-
-type abonnement jeune mel:
-  question: Quel type d'abonnement souhaitez-vous ?
-  par défaut: "'mensuel'"
+  par défaut: "'standard'"
+  applicable si: 
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - coquelicot = non
+      - iris = non
+      - css = non
+      - qf0 = non
+      - quotient familial > 716
+      - âge >= 26
+      - âge <= 64
   suggestions:
+    - "'standard'"
+    - "'vlille reduit'"
+    - "'vlille standard'"
+    - "'abo ter mensuel'"
+    - "'abo ter permanent'"
+
+périodicité:
+  question: Quelle est la périodicité de votre abonnement ?
+  par défaut: "'mensuel'"
+  applicable si: type transport = 'abonnement'
+  suggestions:
+    - "'mensuel'"
     - "'permanent'"
     - "'10 mois'"
-    - "'mensuel'"
-
-type abonnement jeune:
-  question: Quel type d'abonnement souhaitez-vous ?
-  par défaut: "'mensuel'"
-  suggestions:
-    - "'permanent'"
-    - "'mensuel'"
-
-type abonnement adulte:
-  question: Quel type d'abonnement souhaitez-vous ?
-  par défaut: "'mensuel'"
-  suggestions:
-    - "'permanent'"
-    - "'mensuel'"
 
 âge:
   question: Quel est votre âge ?
   par défaut: 30
-  suggestions:
-    enfant: 10
-    jeune: 20
-    adulte: 35
-    senior: 70
 
 quotient familial:
-  question: Quel est votre quotient familial CAF ?
-  par défaut: 750
+  question: Quel est votre quotient familial (€) ?
+  par défaut: 800
   description: Montant fourni par la CAF ou calculé à partir de vos revenus
 
-css ou ame:
-  question: Êtes-vous bénéficiaire de la CSS non participative ou de l'AME ?
-  par défaut: "'non'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
-  applicable si: type voyage = 'abonnement'
+coquelicot:
+  question: Êtes-vous non ou mal voyant, titulaire de la CMI ou d'invalidité portant la mention cécité ?
+  par défaut: non
+  applicable si: type transport = 'abonnement'
 
-habitant mel:
-  question: Habitez-vous dans la Métropole Européenne de Lille (MEL) ?
-  par défaut: "'oui'"
-  suggestions:
-    - "'oui'"
-    - "'non'"
+iris:
+  question: Êtes-vous demandeur d'emploi sous certaines conditions ?
+  par défaut: non
+  applicable si: type transport = 'abonnement'
+
+css:
+  question: Bénéficiez-vous de la CSS non participative ou de l'AME ?
+  par défaut: non
+  applicable si: type transport = 'abonnement'
+
+qf0:
+  question: Êtes-vous non imposable ou payez-vous moins de 300€ d'impôts sur le revenu ?
+  par défaut: non
+  applicable si:
+    toutes ces conditions:
+      - type transport = 'abonnement'
+      - âge >= 65
